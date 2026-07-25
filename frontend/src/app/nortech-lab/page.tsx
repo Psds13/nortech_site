@@ -1,18 +1,35 @@
+"use client";
+
 // ═══════════════════════════════════════════════════════════════════════════
 // NORTECH LAB - INNOVATION TESTING GROUNDS
 // ═══════════════════════════════════════════════════════════════════════════
-// Showcase de projetos em desenvolvimento, demonstrações de IA e roadmap.
+// Showcase de projetos em desenvolvimento e roadmap.
 // Padrões: Next.js App Router, Framer Motion, TypeScript strict
 // ═══════════════════════════════════════════════════════════════════════════
 
-import { motion, AnimatePresence } from 'framer-motion';
-import { useState } from 'react';
-import Image from 'next/image';
+import { motion, AnimatePresence } from "framer-motion";
+import { useState } from "react";
+import Image from "next/image";
 import {
-  Beaker, Code, Cpu, Lightbulb, Brain, Globe, Terminal,
-  GitBranch, Play, ChevronRight, MapPin, CheckCircle2, Clock, Rocket, FlaskConical
-} from 'lucide-react';
-import Link from 'next/link';
+  Beaker,
+  Code,
+  Cpu,
+  Lightbulb,
+  Brain,
+  Globe,
+  Terminal,
+  GitBranch,
+  Play,
+  ChevronRight,
+  MapPin,
+  CheckCircle2,
+  Clock,
+  Rocket,
+  FlaskConical,
+  Target,
+  Zap,
+} from "lucide-react";
+import Link from "next/link";
 
 /**
  * Renderiza o fundo animado do Lab com grid e gradientes de cor
@@ -21,10 +38,11 @@ import Link from 'next/link';
 function LabBackground() {
   return (
     <div className="fixed inset-0 pointer-events-none overflow-hidden -z-10">
-      <div className="absolute inset-0 opacity-[0.03]"
+      <div
+        className="absolute inset-0 opacity-[0.03]"
         style={{
           backgroundImage: `linear-gradient(rgba(0,219,255,1) 1px, transparent 1px), linear-gradient(90deg, rgba(0,219,255,1) 1px, transparent 1px)`,
-          backgroundSize: '50px 50px',
+          backgroundSize: "50px 50px",
         }}
       />
       <div className="absolute top-0 left-1/4 w-96 h-96 bg-cyan-500/8 rounded-full blur-[120px]" />
@@ -43,12 +61,15 @@ function TerminalDemo({ code }: { code: string[] }) {
   const [done, setDone] = useState(false);
 
   const run = async () => {
-    setRunning(true); setLines([]); setDone(false);
+    setRunning(true);
+    setLines([]);
+    setDone(false);
     for (let i = 0; i < code.length; i++) {
-      await new Promise(r => setTimeout(r, 400 + Math.random() * 300));
-      setLines(prev => [...prev, code[i]]);
+      await new Promise((r) => setTimeout(r, 400 + Math.random() * 300));
+      setLines((prev) => [...prev, code[i]]);
     }
-    setRunning(false); setDone(true);
+    setRunning(false);
+    setDone(true);
   };
 
   return (
@@ -57,94 +78,59 @@ function TerminalDemo({ code }: { code: string[] }) {
         <div className="w-3 h-3 rounded-full bg-red-500/60" />
         <div className="w-3 h-3 rounded-full bg-yellow-500/60" />
         <div className="w-3 h-3 rounded-full bg-green-500/60" />
-        <span className="text-gray-600 text-xs ml-2 font-mono">nortech-terminal v2.0</span>
-        <button onClick={run} disabled={running}
-          className="ml-auto flex items-center gap-2 bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 text-xs px-3 py-1 rounded-full border border-cyan-500/20 transition-all disabled:opacity-50">
-          <Play className="w-3 h-3" /> {running ? 'Executando...' : 'Executar'}
+        <span className="text-gray-600 text-xs ml-2 font-mono">
+          nortech-terminal v2.0
+        </span>
+        <button
+          onClick={run}
+          disabled={running}
+          className="ml-auto flex items-center gap-2 bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 text-xs px-3 py-1 rounded-full border border-cyan-500/20 transition-all disabled:opacity-50"
+        >
+          <Play className="w-3 h-3" /> {running ? "Executando..." : "Executar"}
         </button>
       </div>
       <div className="p-4 font-mono text-sm min-h-[120px]">
         {lines.length === 0 && !running && (
-          <p className="text-gray-700 text-xs">{'// Clique em Executar para ver o sistema em ação'}</p>
+          <p className="text-gray-700 text-xs">
+            {"// Clique em Executar para ver o sistema em ação"}
+          </p>
         )}
         {lines.map((line, i) => (
-          <motion.div key={i} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }}
-            className={`mb-1 ${line.startsWith('✓') ? 'text-emerald-400' : line.startsWith('>') ? 'text-cyan-400' : line.startsWith('[IA]') ? 'text-purple-400' : 'text-gray-300'}`}>
+          <motion.div
+            key={i}
+            initial={{ opacity: 0, x: -10 }}
+            animate={{ opacity: 1, x: 0 }}
+            className={`mb-1 ${
+              line.startsWith("✓")
+                ? "text-emerald-400"
+                : line.startsWith(">")
+                ? "text-cyan-400"
+                : line.startsWith("[SISTEMA]")
+                ? "text-purple-400"
+                : "text-gray-300"
+            }`}
+          >
             {line}
           </motion.div>
         ))}
         {running && (
-          <motion.span animate={{ opacity: [1, 0] }} transition={{ repeat: Infinity, duration: 0.8 }} className="text-cyan-400">_</motion.span>
+          <motion.span
+            animate={{ opacity: [1, 0] }}
+            transition={{ repeat: Infinity, duration: 0.8 }}
+            className="text-cyan-400"
+          >
+            _
+          </motion.span>
         )}
         {done && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mt-2 text-emerald-400 text-xs">
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="mt-2 text-emerald-400 text-xs"
+          >
             ✓ Processo concluído com sucesso
           </motion.div>
         )}
-      </div>
-    </div>
-  );
-}
-
-/**
- * Chatbot de IA que simula respostas inteligentes sobre automação e custos
- * Uso: Demonstração das capacidades de IA da Nortech
- */
-function AITest() {
-  const [input, setInput] = useState('');
-  const [messages, setMessages] = useState<{ role: 'user' | 'ai'; text: string }[]>([]);
-  const [typing, setTyping] = useState(false);
-
-  const RESPONSES: Record<string, string> = {
-    default: "Analisando seu contexto empresarial... Baseado nos dados fornecidos, recomendo implementar automação de processos para reduzir em até 40% o tempo operacional. Posso iniciar um diagnóstico completo?",
-    automação: "Para automação de processos, a Nortech oferece soluções customizadas com integração de IA. Empresas que implementaram nossas soluções reduziram em média 65% das tarefas manuais. Quer ver um caso de uso real?",
-    custo: "Calculando ROI... Com base no perfil da sua empresa, estimo uma economia de R$45.000/mês após a implementação completa. O investimento se paga em média em 4 meses. Detalho o plano?",
-    ia: "Nossa IA analisa padrões de comportamento, identifica gargalos e sugere otimizações em tempo real. É como ter um consultor estratégico trabalhando 24/7 para sua empresa.",
-  };
-
-  const send = async () => {
-    if (!input.trim()) return;
-    const userMsg = input.trim(); setInput('');
-    setMessages(prev => [...prev, { role: 'user', text: userMsg }]);
-    setTyping(true);
-    await new Promise(r => setTimeout(r, 1200));
-    const key = Object.keys(RESPONSES).find(k => k !== 'default' && userMsg.toLowerCase().includes(k));
-    setMessages(prev => [...prev, { role: 'ai', text: key ? RESPONSES[key] : RESPONSES.default }]);
-    setTyping(false);
-  };
-
-  return (
-    <div className="bg-linear-to-b from-purple-950/20 to-black border border-purple-500/20 rounded-2xl overflow-hidden">
-      <div className="flex items-center gap-3 px-5 py-4 border-b border-white/5">
-        <div className="w-8 h-8 bg-purple-500/20 rounded-xl flex items-center justify-center">
-          <Brain className="w-4 h-4 text-purple-400" />
-        </div>
-        <div>
-          <p className="text-foreground font-bold text-sm">Nortech AI Assistant</p>
-          <p className="text-emerald-400 text-[10px] flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse inline-block" /> Online</p>
-        </div>
-      </div>
-      <div className="h-40 overflow-y-auto p-4 space-y-3">
-        {messages.length === 0 && <p className="text-gray-600 text-xs text-center py-4">Pergunte sobre automação, custos, IA ou estratégia...</p>}
-        {messages.map((msg, i) => (
-          <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-            <div className={`max-w-[80%] px-3 py-2 rounded-xl text-xs leading-relaxed ${msg.role === 'user' ? 'bg-cyan-500/20 text-cyan-100 border border-cyan-500/20' : 'bg-purple-500/10 text-gray-300 border border-purple-500/15'}`}>
-              {msg.text}
-            </div>
-          </div>
-        ))}
-        {typing && (
-          <div className="flex justify-start">
-            <div className="bg-purple-500/10 border border-purple-500/15 px-3 py-2 rounded-xl">
-              <div className="flex gap-1">{[0, 1, 2].map(i => <motion.div key={i} className="w-1.5 h-1.5 rounded-full bg-purple-400" animate={{ scale: [1, 1.5, 1] }} transition={{ delay: i * 0.15, repeat: Infinity, duration: 0.6 }} />)}</div>
-            </div>
-          </div>
-        )}
-      </div>
-      <div className="flex gap-2 p-3 border-t border-white/5">
-        <input value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => e.key === 'Enter' && send()}
-          placeholder="Digite sua dúvida..." className="flex-1 bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-foreground text-sm font-bold placeholder:text-gray-500 focus:outline-none focus:border-cyan-500/60 transition-all" />
-        <button onClick={send} className="bg-cyan-500/20 hover:bg-cyan-500/30 border border-cyan-500/20 text-cyan-400 px-4 py-2 rounded-xl text-xs transition-all font-bold">Enviar</button>
       </div>
     </div>
   );
@@ -155,47 +141,149 @@ function AITest() {
 // Estrutura: id, ícone, categoria, título, descrição, tech stack, progresso
 // ─────────────────────────────────────────────────────────────────
 const projects = [
-  { id: 'smart-process', icon: <Cpu className="w-6 h-6" />, category: 'Em Desenvolvimento', categoryColor: 'cyan', title: 'Nortech Process AI', desc: 'Sistema de automação inteligente que analisa gargalos empresariais e sugere otimizações em tempo real usando machine learning.', tech: ['Python', 'TensorFlow', 'FastAPI', 'React'], progress: 72, terminal: ['> Inicializando módulo de análise...', '> Carregando modelo de IA v3.2...', '[IA] Analisando padrões de processo...', '[IA] Detectados 7 gargalos operacionais', '[IA] Calculando otimizações possíveis...', '✓ Relatório gerado: 43% de melhoria estimada'] },
-  { id: 'startup-hub', icon: <Lightbulb className="w-6 h-6" />, category: 'Em Desenvolvimento', categoryColor: 'cyan', title: 'Startup Hub Platform', desc: 'Plataforma colaborativa para conectar startups com investidores, mentores e recursos da Nortech.', tech: ['Next.js', 'Supabase', 'Stripe', 'AI'], progress: 55, terminal: ['> Conectando ao servidor...', '> Carregando perfis de startups...', '[IA] Analisando compatibilidade investidor-startup...', '[IA] Match score calculado: 94%', '> Gerando proposta de conexão...', '✓ 3 conexões estratégicas identificadas'] },
-  { id: 'interactive-site', icon: <Globe className="w-6 h-6" />, category: 'Protótipo', categoryColor: 'blue', title: 'Site Interativo v2', desc: 'Plataforma web com experiências imersivas, elementos de gamificação e inteligência adaptativa baseada no comportamento do usuário.', tech: ['React', 'GSAP', 'WebGL', 'Three.js'], progress: 88, terminal: ['> Inicializando WebGL engine...', '> Carregando shaders 3D...', '[RENDER] 60fps atingido', '[UX] Carregando módulo adaptativo...', '[UX] Perfil de usuário analisado', '✓ Experiência personalizada ativa'] },
-  { id: 'mvp-app', icon: <Code className="w-6 h-6" />, category: 'MVP', categoryColor: 'purple', title: 'Nortech Mobile MVP', desc: 'Aplicativo mobile que centraliza todos os serviços Nortech: diagnóstico, acompanhamento de projetos e suporte em tempo real.', tech: ['React Native', 'Expo', 'Supabase', 'Push Notifications'], progress: 40, terminal: ['> Inicializando React Native...', '> Conectando à API Nortech...', '[AUTH] Verificando credenciais...', '[SYNC] Sincronizando dados do projeto...', '> Carregando dashboard mobile...', '✓ App pronto para uso'] },
-  { id: 'ia-connector', icon: <Brain className="w-6 h-6" />, category: 'Conceito', categoryColor: 'emerald', title: 'Nortech AI Connector', desc: 'Middleware inteligente que conecta qualquer sistema legado a APIs modernas de IA, sem necessidade de refatoração completa.', tech: ['Python', 'LangChain', 'OpenAI', 'Node.js'], progress: 20, terminal: ['> Detectando sistema legado...', '> Mapeando estrutura de dados...', '[IA] Analisando endpoints disponíveis...', '[IA] Gerando adaptadores automáticos...', '> Bridge configurada com sucesso', '✓ Sistema legado conectado à IA'] },
-  { id: 'collab-platform', icon: <GitBranch className="w-6 h-6" />, category: 'Ideia', categoryColor: 'yellow', title: 'TechCollab Network', desc: 'Rede de colaboração tecnológica onde desenvolvedores, designers e PMs podem co-criar soluções open-source sob a curadoria Nortech.', tech: ['Next.js', 'GitHub API', 'WebSockets', 'AI'], progress: 10, terminal: ['> Inicializando rede de colaboração...', '> Mapeando habilidades dos membros...', '[IA] Identificando projetos compatíveis...', '[MATCH] 12 colaboradores disponíveis', '> Criando sala de projeto...', '✓ Equipe montada com sucesso'] },
+  {
+    id: "smart-process",
+    icon: <Cpu className="w-6 h-6" />,
+    category: "Em Desenvolvimento",
+    categoryColor: "cyan",
+    title: "Nortech Process",
+    desc: "Sistema de automação que analisa processos empresariais e sugere otimizações práticas para melhorar a eficiência operacional.",
+    tech: ["Python", "TensorFlow", "FastAPI", "React"],
+    progress: 72,
+    terminal: [
+      "> Inicializando módulo de análise...",
+      "> Carregando dados do processo...",
+      "[SISTEMA] Analisando fluxos operacionais...",
+      "[SISTEMA] Identificados 7 pontos de melhoria",
+      "[SISTEMA] Calculando impacto das otimizações...",
+      "✓ Relatório gerado: 43% de melhoria estimada",
+    ],
+  },
+  {
+    id: "startup-hub",
+    icon: <Lightbulb className="w-6 h-6" />,
+    category: "Em Desenvolvimento",
+    categoryColor: "cyan",
+    title: "Startup Hub",
+    desc: "Plataforma que conecta startups com investidores, mentores e recursos da Nortech para acelerar o crescimento.",
+    tech: ["Next.js", "Supabase", "Stripe"],
+    progress: 55,
+    terminal: [
+      "> Conectando ao servidor...",
+      "> Carregando perfis de startups...",
+      "[SISTEMA] Analisando compatibilidade...",
+      "[SISTEMA] Match score calculado: 94%",
+      "> Gerando proposta de conexão...",
+      "✓ 3 conexões estratégicas identificadas",
+    ],
+  },
+  {
+    id: "interactive-site",
+    icon: <Globe className="w-6 h-6" />,
+    category: "Protótipo",
+    categoryColor: "blue",
+    title: "Site Interativo v2",
+    desc: "Plataforma web com experiências imersivas e elementos de gamificação para engajar os visitantes.",
+    tech: ["React", "GSAP", "WebGL", "Three.js"],
+    progress: 88,
+    terminal: [
+      "> Inicializando WebGL engine...",
+      "> Carregando elementos visuais...",
+      "[RENDER] 60fps atingido",
+      "[UX] Carregando módulo interativo...",
+      "[UX] Perfil de usuário analisado",
+      "✓ Experiência personalizada ativa",
+    ],
+  },
+  {
+    id: "mvp-app",
+    icon: <Code className="w-6 h-6" />,
+    category: "MVP",
+    categoryColor: "purple",
+    title: "Nortech Mobile MVP",
+    desc: "Aplicativo mobile que centraliza os serviços Nortech: diagnóstico, acompanhamento de projetos e suporte.",
+    tech: ["React Native", "Expo", "Supabase"],
+    progress: 40,
+    terminal: [
+      "> Inicializando React Native...",
+      "> Conectando à API Nortech...",
+      "[AUTH] Verificando credenciais...",
+      "[SYNC] Sincronizando dados do projeto...",
+      "> Carregando dashboard mobile...",
+      "✓ App pronto para uso",
+    ],
+  },
+  {
+    id: "ia-connector",
+    icon: <Brain className="w-6 h-6" />,
+    category: "Conceito",
+    categoryColor: "emerald",
+    title: "Nortech Bridge",
+    desc: "Middleware que conecta sistemas legados a APIs modernas, permitindo integração sem necessidade de refatoração completa.",
+    tech: ["Python", "LangChain", "Node.js"],
+    progress: 20,
+    terminal: [
+      "> Detectando sistema legado...",
+      "> Mapeando estrutura de dados...",
+      "[SISTEMA] Analisando endpoints disponíveis...",
+      "[SISTEMA] Gerando adaptadores automáticos...",
+      "> Bridge configurada com sucesso",
+      "✓ Sistema legado conectado",
+    ],
+  },
+  {
+    id: "collab-platform",
+    icon: <GitBranch className="w-6 h-6" />,
+    category: "Ideia",
+    categoryColor: "yellow",
+    title: "TechCollab Network",
+    desc: "Rede de colaboração onde desenvolvedores, designers e PMs co-criam soluções sob a curadoria Nortech.",
+    tech: ["Next.js", "GitHub API", "WebSockets"],
+    progress: 10,
+    terminal: [
+      "> Inicializando rede de colaboração...",
+      "> Mapeando habilidades dos membros...",
+      "[SISTEMA] Identificando projetos compatíveis...",
+      "[MATCH] 12 colaboradores disponíveis",
+      "> Criando sala de projeto...",
+      "✓ Equipe montada com sucesso",
+    ],
+  },
 ];
 
 const categoryColors: Record<string, string> = {
-  cyan: 'text-cyan-400 bg-cyan-500/10 border-cyan-500/20',
-  blue: 'text-blue-400 bg-blue-500/10 border-blue-500/20',
-  purple: 'text-purple-400 bg-purple-500/10 border-purple-500/20',
-  emerald: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20',
-  yellow: 'text-yellow-400 bg-yellow-500/10 border-yellow-500/20',
+  cyan: "text-cyan-400 bg-cyan-500/10 border-cyan-500/20",
+  blue: "text-blue-400 bg-blue-500/10 border-blue-500/20",
+  purple: "text-purple-400 bg-purple-500/10 border-purple-500/20",
+  emerald: "text-emerald-400 bg-emerald-500/10 border-emerald-500/20",
+  yellow: "text-yellow-400 bg-yellow-500/10 border-yellow-500/20",
 };
 
 const diferenciais = [
   {
-    title: 'Estratégia com execução real',
-    text: 'Transformamos ideias em soluções testadas, com foco em impacto, velocidade e escalabilidade.',
-    icon: <Lightbulb className="w-6 h-6" />,
-    accent: 'cyan',
+    title: "Estratégia com execução",
+    text: "Transformamos ideias em soluções testadas, com foco em resultado e escalabilidade.",
+    icon: <Target className="w-6 h-6" />,
+    accent: "cyan",
   },
   {
-    title: 'Tecnologia aplicada aos processos',
-    text: 'Integramos IA, automação e arquitetura moderna para reduzir gargalos e aumentar produtividade.',
-    icon: <Cpu className="w-6 h-6" />,
-    accent: 'blue',
+    title: "Tecnologia aplicada",
+    text: "Integramos automação e arquitetura moderna para reduzir gargalos e aumentar produtividade.",
+    icon: <Zap className="w-6 h-6" />,
+    accent: "blue",
   },
   {
-    title: 'Resultados mensuráveis',
-    text: 'Cada projeto é pensado para entregar eficiência, clareza e retorno concreto para o negócio.',
+    title: "Resultados concretos",
+    text: "Cada projeto entrega eficiência, clareza e retorno real para o negócio.",
     icon: <Rocket className="w-6 h-6" />,
-    accent: 'purple',
+    accent: "purple",
   },
 ];
 
 const diferencialColors: Record<string, string> = {
-  cyan: 'border-cyan-500/20 bg-cyan-500/10 text-cyan-400',
-  blue: 'border-blue-500/20 bg-blue-500/10 text-blue-400',
-  purple: 'border-purple-500/20 bg-purple-500/10 text-purple-400',
+  cyan: "border-cyan-500/20 bg-cyan-500/10 text-cyan-400",
+  blue: "border-blue-500/20 bg-blue-500/10 text-blue-400",
+  purple: "border-purple-500/20 bg-purple-500/10 text-purple-400",
 };
 
 /**
@@ -205,39 +293,87 @@ const diferencialColors: Record<string, string> = {
 function ProjectCard({ project }: { project: typeof projects[0] }) {
   const [expanded, setExpanded] = useState(false);
   return (
-    <motion.div layout initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
-      className="bg-foreground/[0.02] border border-foreground/8 hover:border-cyan-500/30 rounded-3xl overflow-hidden transition-all duration-300 group">
+    <motion.div
+      layout
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      className="bg-foreground/[0.02] border border-foreground/8 hover:border-cyan-500/30 rounded-3xl overflow-hidden transition-all duration-300 group"
+    >
       <div className="p-6">
         <div className="flex items-start justify-between gap-4 mb-4">
-          <div className={`w-12 h-12 rounded-2xl flex items-center justify-center border ${categoryColors[project.categoryColor]} shrink-0 group-hover:scale-110 transition-transform`}>
-            <span className={categoryColors[project.categoryColor].split(' ')[0]}>{project.icon}</span>
+          <div
+            className={`w-12 h-12 rounded-2xl flex items-center justify-center border ${categoryColors[project.categoryColor]} shrink-0 group-hover:scale-110 transition-transform`}
+          >
+            <span className={categoryColors[project.categoryColor].split(" ")[0]}>
+              {project.icon}
+            </span>
           </div>
-          <span className={`text-[9px] font-black uppercase tracking-widest px-3 py-1 rounded-full border ${categoryColors[project.categoryColor]}`}>{project.category}</span>
+          <span
+            className={`text-[9px] font-black uppercase tracking-widest px-3 py-1 rounded-full border ${categoryColors[project.categoryColor]}`}
+          >
+            {project.category}
+          </span>
         </div>
-        <h3 className="text-foreground font-black text-lg mb-2 group-hover:text-cyan-400 transition-colors uppercase tracking-tight pr-2">{project.title}</h3>
-        <p className="text-foreground/50 text-sm leading-relaxed mb-4">{project.desc}</p>
+        <h3 className="text-foreground font-black text-lg mb-2 group-hover:text-cyan-400 transition-colors uppercase tracking-tight pr-2">
+          {project.title}
+        </h3>
+        <p className="text-foreground/50 text-sm leading-relaxed mb-4">
+          {project.desc}
+        </p>
         <div className="mb-4">
           <div className="flex justify-between mb-2">
-            <span className="text-foreground/40 text-[9px] uppercase tracking-widest font-black">Progresso</span>
-            <span className="text-cyan-400 text-[9px] font-black">{project.progress}%</span>
+            <span className="text-foreground/40 text-[9px] uppercase tracking-widest font-black">
+              Progresso
+            </span>
+            <span className="text-cyan-400 text-[9px] font-black">
+              {project.progress}%
+            </span>
           </div>
           <div className="h-1 bg-foreground/5 rounded-full overflow-hidden">
-            <motion.div className="h-full bg-linear-to-r from-cyan-500 to-blue-500 rounded-full"
-              initial={{ width: 0 }} whileInView={{ width: `${project.progress}%` }} viewport={{ once: true }} transition={{ duration: 1, delay: 0.3 }} />
+            <motion.div
+              className="h-full bg-linear-to-r from-cyan-500 to-blue-500 rounded-full"
+              initial={{ width: 0 }}
+              whileInView={{ width: `${project.progress}%` }}
+              viewport={{ once: true }}
+              transition={{ duration: 1, delay: 0.3 }}
+            />
           </div>
         </div>
         <div className="flex flex-wrap gap-1 mb-4">
-          {project.tech.map(t => <span key={t} className="text-[9px] font-black uppercase tracking-wider bg-foreground/[0.04] text-foreground/40 border border-foreground/8 px-2 py-1 rounded-lg">{t}</span>)}
+          {project.tech.map((t) => (
+            <span
+              key={t}
+              className="text-[9px] font-black uppercase tracking-wider bg-foreground/[0.04] text-foreground/40 border border-foreground/8 px-2 py-1 rounded-lg"
+            >
+              {t}
+            </span>
+          ))}
         </div>
-        <button onClick={() => setExpanded(!expanded)} className="flex items-center gap-2 text-cyan-400 text-xs font-black uppercase tracking-wider hover:text-foreground transition-all">
-          <Terminal className="w-3 h-3" /> {expanded ? 'Fechar terminal' : 'Ver terminal demo'}
-          <ChevronRight className={`w-3 h-3 transition-transform ${expanded ? 'rotate-90' : ''}`} />
+        <button
+          onClick={() => setExpanded(!expanded)}
+          className="flex items-center gap-2 text-cyan-400 text-xs font-black uppercase tracking-wider hover:text-foreground transition-all"
+        >
+          <Terminal className="w-3 h-3" />{" "}
+          {expanded ? "Fechar terminal" : "Ver terminal demo"}
+          <ChevronRight
+            className={`w-3 h-3 transition-transform ${
+              expanded ? "rotate-90" : ""
+            }`}
+          />
         </button>
       </div>
       <AnimatePresence>
         {expanded && (
-          <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="border-t border-foreground/5 px-4 pb-4">
-            <div className="pt-4"><TerminalDemo code={project.terminal} /></div>
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            className="border-t border-foreground/5 px-4 pb-4"
+          >
+            <div className="pt-4">
+              <TerminalDemo code={project.terminal} />
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
@@ -251,91 +387,154 @@ function ProjectCard({ project }: { project: typeof projects[0] }) {
 // ─────────────────────────────────────────────────────────────────
 const roadmapItems = [
   {
-    quarter: 'Q1 2025',
-    status: 'done',
-    title: 'Fundação da Plataforma',
-    items: ['Lançamento do Website Nortech v1.0', 'Infraestrutura de backend (Supabase)', 'Sistema de identidade visual', 'Formação do time técnico core'],
+    quarter: "Q1 2025",
+    status: "done",
+    title: "Fundação da Plataforma",
+    items: [
+      "Lançamento do Website Nortech v1.0",
+      "Infraestrutura de backend (Supabase)",
+      "Sistema de identidade visual",
+      "Formação do time técnico core",
+    ],
     icon: <CheckCircle2 className="w-5 h-5" />,
-    color: 'emerald',
+    color: "emerald",
   },
   {
-    quarter: 'Q2 2025',
-    status: 'done',
-    title: 'Primeiros Produtos',
-    items: ['Nortech Process AI – MVP interno', 'Dashboard de clientes v1', 'Integração Supabase + Next.js', 'Onboarding de primeiros clientes'],
+    quarter: "Q2 2025",
+    status: "done",
+    title: "Primeiros Produtos",
+    items: [
+      "Nortech Process – MVP interno",
+      "Dashboard de clientes v1",
+      "Integração Supabase + Next.js",
+      "Onboarding de primeiros clientes",
+    ],
     icon: <CheckCircle2 className="w-5 h-5" />,
-    color: 'emerald',
+    color: "emerald",
   },
   {
-    quarter: 'Q3 2025',
-    status: 'done',
-    title: 'Expansão e Design System',
-    items: ['Design System Nortech UI Kit', 'Website v2.0 (atual)', 'Nortech Lab – Ambiente de experimentação', 'Nortech Green – Módulo sustentável'],
+    quarter: "Q3 2025",
+    status: "done",
+    title: "Expansão e Design System",
+    items: [
+      "Design System Nortech UI Kit",
+      "Website v2.0 (atual)",
+      "Nortech Lab – Ambiente de experimentação",
+      "Nortech Green – Módulo sustentável",
+    ],
     icon: <CheckCircle2 className="w-5 h-5" />,
-    color: 'emerald',
+    color: "emerald",
   },
   {
-    quarter: 'Q4 2025',
-    status: 'active',
-    title: 'IA & Automação Avançada',
-    items: ['Nortech AI Connector – Beta', 'Startup Hub Platform – Lançamento', 'Sistema de acessibilidade universal', 'Nortech Mobile MVP – Alpha'],
+    quarter: "Q4 2025",
+    status: "active",
+    title: "Automação Avançada",
+    items: [
+      "Nortech Bridge – Beta",
+      "Startup Hub Platform – Lançamento",
+      "Sistema de acessibilidade universal",
+      "Nortech Mobile MVP – Alpha",
+    ],
     icon: <Clock className="w-5 h-5" />,
-    color: 'cyan',
+    color: "cyan",
   },
   {
-    quarter: 'Q1 2026',
-    status: 'upcoming',
-    title: 'Escala e Distribuição',
-    items: ['TechCollab Network – Beta público', 'Expansão de parceiros', 'Nortech Marketplace de soluções', 'Certificação ESG & LGPD'],
+    quarter: "Q1 2026",
+    status: "upcoming",
+    title: "Escala e Distribuição",
+    items: [
+      "TechCollab Network – Beta público",
+      "Expansão de parceiros",
+      "Nortech Marketplace de soluções",
+      "Certificação ESG & LGPD",
+    ],
     icon: <MapPin className="w-5 h-5" />,
-    color: 'purple',
+    color: "purple",
   },
   {
-    quarter: 'Q2 2026',
-    status: 'upcoming',
-    title: 'Produto Global',
-    items: ['Lançamento internacional (🇧🇷→🌎)', 'Nortech AI v2.0 com reasoning avançado', 'Site Interativo v2 em produção', 'Rodada de investimento'],
+    quarter: "Q2 2026",
+    status: "upcoming",
+    title: "Produto Global",
+    items: [
+      "Lançamento internacional (🇧🇷→🌎)",
+      "Nortech Platform v2.0",
+      "Site Interativo v2 em produção",
+      "Rodada de investimento",
+    ],
     icon: <Rocket className="w-5 h-5" />,
-    color: 'blue',
+    color: "blue",
   },
 ];
 
-const roadmapColors: Record<string, { border: string; bg: string; text: string; dot: string }> = {
-  emerald: { border: 'border-emerald-500/30', bg: 'bg-emerald-500/10', text: 'text-emerald-400', dot: 'bg-emerald-500' },
-  cyan:    { border: 'border-cyan-500/50',    bg: 'bg-cyan-500/10',    text: 'text-cyan-400',    dot: 'bg-cyan-500 animate-pulse' },
-  purple:  { border: 'border-purple-500/20',  bg: 'bg-foreground/[0.02]', text: 'text-purple-400',  dot: 'bg-purple-500/40' },
-  blue:    { border: 'border-blue-500/20',    bg: 'bg-foreground/[0.02]', text: 'text-blue-400',    dot: 'bg-blue-500/40' },
+const roadmapColors: Record<
+  string,
+  { border: string; bg: string; text: string; dot: string }
+> = {
+  emerald: {
+    border: "border-emerald-500/30",
+    bg: "bg-emerald-500/10",
+    text: "text-emerald-400",
+    dot: "bg-emerald-500",
+  },
+  cyan: {
+    border: "border-cyan-500/50",
+    bg: "bg-cyan-500/10",
+    text: "text-cyan-400",
+    dot: "bg-cyan-500 animate-pulse",
+  },
+  purple: {
+    border: "border-purple-500/20",
+    bg: "bg-foreground/[0.02]",
+    text: "text-purple-400",
+    dot: "bg-purple-500/40",
+  },
+  blue: {
+    border: "border-blue-500/20",
+    bg: "bg-foreground/[0.02]",
+    text: "text-blue-400",
+    dot: "bg-blue-500/40",
+  },
 };
 
 // ── Main Page ─────────────────────────────────────────────────────
 /**
  * Página principal do Nortech Lab
- * Showcase de projetos em desenvolvimento, roadmap e demonstrações de IA
- * 
+ * Showcase de projetos em desenvolvimento e roadmap
+ *
  * Arquitetura:
  * - LabBackground: fundo visual
- * - AITest: interação de IA
  * - ProjectCard: grid de projetos filtráveis
  * - Roadmap: timeline de entregas
  */
 export default function NortechLab() {
-  const [activeFilter, setActiveFilter] = useState('Todos');
-  const filters = ['Todos', 'Em Desenvolvimento', 'Protótipo', 'MVP', 'Conceito', 'Ideia'];
+  const [activeFilter, setActiveFilter] = useState("Todos");
+  const filters = ["Todos", "Em Desenvolvimento", "Protótipo", "MVP", "Conceito", "Ideia"];
 
-  const filtered = activeFilter === 'Todos' ? projects : projects.filter(p => p.category === activeFilter);
+  const filtered =
+    activeFilter === "Todos"
+      ? projects
+      : projects.filter((p) => p.category === activeFilter);
 
   return (
     <main className="bg-background min-h-screen text-foreground pt-24 pb-20 relative">
       <LabBackground />
 
       <div className="max-w-7xl mx-auto px-6">
-
         {/* ── Hero ──────────────────────────────────────────────── */}
         <section className="mb-24 mt-8 md:mt-12">
           <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-20">
-            <motion.div className="w-full lg:w-1/2 flex flex-col items-center lg:items-start text-center lg:text-left" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }}>
-              <motion.div initial={{ scale: 0, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ type: 'spring' }}
-                className="inline-flex items-center justify-center w-16 h-16 bg-linear-to-br from-cyan-500/20 to-blue-500/20 rounded-2xl mb-6 relative border border-cyan-500/20">
+            <motion.div
+              className="w-full lg:w-1/2 flex flex-col items-center lg:items-start text-center lg:text-left"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8 }}
+            >
+              <motion.div
+                initial={{ scale: 0, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ type: "spring" }}
+                className="inline-flex items-center justify-center w-16 h-16 bg-linear-to-br from-cyan-500/20 to-blue-500/20 rounded-2xl mb-6 relative border border-cyan-500/20"
+              >
                 <Beaker className="w-8 h-8 text-cyan-400 relative z-10" />
               </motion.div>
 
@@ -346,31 +545,57 @@ export default function NortechLab() {
                 Nortech <span className="text-transparent bg-clip-text bg-linear-to-r from-cyan-400 to-blue-500 pr-2">Lab</span>
               </h1>
               <p className="text-base sm:text-lg text-foreground/60 mb-8 max-w-xl leading-relaxed font-bold uppercase tracking-tight">
-                Onde a imaginação encontra a execução técnica. Projetamos, testamos e validamos as tecnologias que ditarão o ritmo do mercado amanhã.
+                Onde a imaginação encontra a execução técnica. Projetamos,
+                testamos e validamos as tecnologias que ditarão o ritmo do
+                mercado amanhã.
               </p>
 
               <div className="flex flex-wrap gap-4 mb-10">
-                <Link href="/contatos" className="w-full sm:w-auto bg-cyan-500 hover:bg-cyan-400 text-black font-black px-10 py-4 rounded-full transition-all shadow-[0_10px_30px_rgba(0,219,255,0.2)] hover:shadow-[0_15px_40px_rgba(0,219,255,0.4)] uppercase text-[10px] tracking-[0.3em]">
+                <Link
+                  href="/contatos"
+                  className="w-full sm:w-auto bg-cyan-500 hover:bg-cyan-400 text-black font-black px-10 py-4 rounded-full transition-all shadow-[0_10px_30px_rgba(0,219,255,0.2)] hover:shadow-[0_15px_40px_rgba(0,219,255,0.4)] uppercase text-[10px] tracking-[0.3em]"
+                >
                   Iniciar um Projeto
                 </Link>
-                <a href="#roadmap" className="w-full sm:w-auto px-10 py-4 rounded-full border border-foreground/10 hover:border-cyan-500/50 text-foreground font-black uppercase text-[10px] tracking-[0.3em] transition-all">
+                <a
+                  href="#roadmap"
+                  className="w-full sm:w-auto px-10 py-4 rounded-full border border-foreground/10 hover:border-cyan-500/50 text-foreground font-black uppercase text-[10px] tracking-[0.3em] transition-all"
+                >
                   Ver Roadmap
                 </a>
               </div>
 
               <div className="flex flex-wrap gap-8 items-center justify-center lg:justify-start border-t border-foreground/5 pt-8">
-                {[{ label: 'Projetos Ativos', value: '12+' }, { label: 'P&D Mensal', value: '300h+' }].map((stat, i) => (
+                {[
+                  { label: "Projetos Ativos", value: "12+" },
+                  { label: "P&D Mensal", value: "300h+" },
+                ].map((stat, i) => (
                   <div key={i}>
-                    <p className="text-2xl font-black text-foreground uppercase italic">{stat.value}</p>
-                    <p className="text-foreground/40 text-[9px] uppercase tracking-widest font-black">{stat.label}</p>
+                    <p className="text-2xl font-black text-foreground uppercase italic">
+                      {stat.value}
+                    </p>
+                    <p className="text-foreground/40 text-[9px] uppercase tracking-widest font-black">
+                      {stat.label}
+                    </p>
                   </div>
                 ))}
               </div>
             </motion.div>
 
-            <motion.div className="w-full lg:w-1/2 relative flex justify-center" initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} transition={{ duration: 1 }}>
+            <motion.div
+              className="w-full lg:w-1/2 relative flex justify-center"
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              transition={{ duration: 1 }}
+            >
               <div className="relative z-10 w-full max-w-lg aspect-square sm:aspect-square overflow-hidden rounded-[3rem] border border-foreground/10 shadow-2xl group">
-                <Image src="/Nortech LAB.png" alt="Nortech Lab Environment" fill className="object-cover group-hover:scale-105 transition-transform duration-[2000ms]" priority />
+                <Image
+                  src="/Nortech LAB.png"
+                  alt="Nortech Lab Environment"
+                  fill
+                  className="object-cover group-hover:scale-105 transition-transform duration-[2000ms]"
+                  priority
+                />
                 <div className="absolute inset-0 bg-linear-to-t from-black/80 via-transparent to-transparent pointer-events-none" />
                 <div className="absolute bottom-6 left-6 right-6 md:bottom-10 md:left-10 md:right-10 p-5 md:p-6 bg-black/40 backdrop-blur-xl border border-white/10 rounded-2xl">
                   <div className="flex items-center gap-5">
@@ -378,8 +603,12 @@ export default function NortechLab() {
                       <Cpu className="text-cyan-400 w-6 h-6" />
                     </div>
                     <div>
-                      <p className="text-white font-black text-lg leading-none uppercase">Status: Ativo</p>
-                      <p className="text-cyan-400 text-[9px] uppercase font-black tracking-widest mt-1">Ambiente Controlado</p>
+                      <p className="text-white font-black text-lg leading-none uppercase">
+                        Status: Ativo
+                      </p>
+                      <p className="text-cyan-400 text-[9px] uppercase font-black tracking-widest mt-1">
+                        Ambiente Controlado
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -395,11 +624,17 @@ export default function NortechLab() {
           <div className="rounded-[2.5rem] border border-foreground/10 bg-foreground/[0.02] p-6 md:p-10 backdrop-blur-sm">
             <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4 mb-8">
               <div className="max-w-2xl">
-                <p className="text-cyan-400 text-[10px] font-black uppercase tracking-[0.35em] mb-3">Nossos diferenciais</p>
-                <h2 className="text-2xl md:text-3xl font-black text-foreground uppercase italic tracking-tighter pr-2">Por que marcas escolhem a Nortech para transformar ideias em resultado</h2>
+                <p className="text-cyan-400 text-[10px] font-black uppercase tracking-[0.35em] mb-3">
+                  Nossos diferenciais
+                </p>
+                <h2 className="text-2xl md:text-3xl font-black text-foreground uppercase italic tracking-tighter pr-2">
+                  Por que empresas escolhem a Nortech
+                </h2>
               </div>
               <p className="text-foreground/50 text-sm max-w-xl leading-relaxed font-bold uppercase tracking-tight">
-                Não trabalhamos com soluções genéricas. Cada projeto é desenhado para combinar visão estratégica, tecnologia de ponta e execução prática.
+                Não trabalhamos com soluções genéricas. Cada projeto é desenhado
+                para combinar visão estratégica, tecnologia de ponta e execução
+                prática.
               </p>
             </div>
 
@@ -413,29 +648,20 @@ export default function NortechLab() {
                   transition={{ duration: 0.45, delay: index * 0.08 }}
                   className="rounded-3xl border border-foreground/8 bg-background/70 p-6 hover:border-cyan-500/30 transition-all"
                 >
-                  <div className={`inline-flex h-12 w-12 items-center justify-center rounded-2xl border ${diferencialColors[item.accent]}`}>
+                  <div
+                    className={`inline-flex h-12 w-12 items-center justify-center rounded-2xl border ${diferencialColors[item.accent]}`}
+                  >
                     {item.icon}
                   </div>
-                  <h3 className="mt-5 text-lg font-black text-foreground uppercase tracking-tight">{item.title}</h3>
-                  <p className="mt-3 text-sm leading-relaxed text-foreground/60">{item.text}</p>
+                  <h3 className="mt-5 text-lg font-black text-foreground uppercase tracking-tight">
+                    {item.title}
+                  </h3>
+                  <p className="mt-3 text-sm leading-relaxed text-foreground/60">
+                    {item.text}
+                  </p>
                 </motion.div>
               ))}
             </div>
-          </div>
-        </section>
-
-        {/* ── AI Tester ─────────────────────────────────────────── */}
-        <section className="mb-20">
-          <div className="bg-linear-to-r from-purple-950/30 via-background to-blue-950/30 border border-purple-500/20 rounded-[2.5rem] p-6 md:p-10">
-            <div className="flex items-center gap-3 mb-4">
-              <Brain className="w-6 h-6 text-purple-400" />
-              <h2 className="text-xl md:text-2xl font-black text-foreground uppercase italic tracking-tighter pr-2">Teste nossa IA</h2>
-              <span className="text-[9px] bg-purple-500/10 text-purple-400 border border-purple-500/20 px-2 py-0.5 rounded-full font-black uppercase tracking-widest">BETA</span>
-            </div>
-            <p className="text-foreground/50 text-sm mb-6 max-w-xl font-bold uppercase tracking-tight">
-              Experimente nossa inteligência simulada. Pergunte sobre automação, custos ou tecnologia.
-            </p>
-            <div className="max-w-xl"><AITest /></div>
           </div>
         </section>
 
@@ -443,13 +669,24 @@ export default function NortechLab() {
         <section className="mb-24">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
             <div>
-              <h2 className="text-3xl md:text-4xl font-black text-foreground mb-2 uppercase italic tracking-tighter pr-2">Projetos do Lab</h2>
-              <p className="text-foreground/50 text-sm uppercase font-black tracking-tight">Do conceito ao produto final, aqui está o que estamos construindo</p>
+              <h2 className="text-3xl md:text-4xl font-black text-foreground mb-2 uppercase italic tracking-tighter pr-2">
+                Projetos do Lab
+              </h2>
+              <p className="text-foreground/50 text-sm uppercase font-black tracking-tight">
+                Do conceito ao produto final, aqui está o que estamos construindo
+              </p>
             </div>
             <div className="flex flex-wrap gap-2">
-              {filters.map(f => (
-                <button key={f} onClick={() => setActiveFilter(f)}
-                  className={`text-[9px] font-black uppercase tracking-widest px-3 py-2 rounded-full transition-all border ${activeFilter === f ? 'bg-cyan-500/20 text-cyan-400 border-cyan-500/40' : 'bg-foreground/[0.03] text-foreground/40 border-foreground/8 hover:border-cyan-500/20 hover:text-foreground/70'}`}>
+              {filters.map((f) => (
+                <button
+                  key={f}
+                  onClick={() => setActiveFilter(f)}
+                  className={`text-[9px] font-black uppercase tracking-widest px-3 py-2 rounded-full transition-all border ${
+                    activeFilter === f
+                      ? "bg-cyan-500/20 text-cyan-400 border-cyan-500/40"
+                      : "bg-foreground/[0.03] text-foreground/40 border-foreground/8 hover:border-cyan-500/20 hover:text-foreground/70"
+                  }`}
+                >
                   {f}
                 </button>
               ))}
@@ -457,8 +694,14 @@ export default function NortechLab() {
           </div>
           <motion.div layout className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
             <AnimatePresence mode="popLayout">
-              {filtered.map(project => (
-                <motion.div key={project.id} layout initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }}>
+              {filtered.map((project) => (
+                <motion.div
+                  key={project.id}
+                  layout
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.9 }}
+                >
                   <ProjectCard project={project} />
                 </motion.div>
               ))}
@@ -468,7 +711,12 @@ export default function NortechLab() {
 
         {/* ── ROADMAP ───────────────────────────────────────────── */}
         <section id="roadmap" className="mb-24">
-          <motion.div className="text-center mb-16" initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
+          <motion.div
+            className="text-center mb-16"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+          >
             <span className="inline-block mb-4 text-cyan-400 font-black bg-cyan-500/10 px-6 py-2 rounded-full text-[10px] uppercase tracking-[0.4em] border border-cyan-500/20">
               Visão de Futuro
             </span>
@@ -495,26 +743,61 @@ export default function NortechLab() {
                     whileInView={{ opacity: 1, x: 0 }}
                     viewport={{ once: true }}
                     transition={{ delay: i * 0.1 }}
-                    className={`flex flex-col md:flex-row gap-6 md:gap-0 items-start ${isLeft ? 'md:flex-row' : 'md:flex-row-reverse'}`}
+                    className={`flex flex-col md:flex-row gap-6 md:gap-0 items-start ${
+                      isLeft ? "md:flex-row" : "md:flex-row-reverse"
+                    }`}
                   >
                     {/* Card */}
-                    <div className={`w-full md:w-[45%] ${isLeft ? 'md:pr-12' : 'md:pl-12'}`}>
-                      <div className={`p-6 rounded-[2rem] border ${c.border} ${c.bg} relative group`}>
+                    <div
+                      className={`w-full md:w-[45%] ${
+                        isLeft ? "md:pr-12" : "md:pl-12"
+                      }`}
+                    >
+                      <div
+                        className={`p-6 rounded-[2rem] border ${c.border} ${c.bg} relative group`}
+                      >
                         <div className="flex items-center gap-4 mb-4">
-                          <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${c.text} bg-foreground/5 border border-foreground/10`}>
+                          <div
+                            className={`w-10 h-10 rounded-xl flex items-center justify-center ${c.text} bg-foreground/5 border border-foreground/10`}
+                          >
                             {item.icon}
                           </div>
                           <div>
-                            <span className={`text-[9px] font-black uppercase tracking-widest ${c.text}`}>{item.quarter}</span>
-                            <p className="text-foreground font-black uppercase italic tracking-tight text-lg leading-tight pr-2">{item.title}</p>
+                            <span
+                              className={`text-[9px] font-black uppercase tracking-widest ${c.text}`}
+                            >
+                              {item.quarter}
+                            </span>
+                            <p className="text-foreground font-black uppercase italic tracking-tight text-lg leading-tight pr-2">
+                              {item.title}
+                            </p>
                           </div>
-                          {item.status === 'done' && <span className="ml-auto text-[8px] font-black uppercase tracking-widest text-emerald-400 bg-emerald-500/10 px-2 py-1 rounded-full border border-emerald-500/20">Concluído</span>}
-                          {item.status === 'active' && <span className="ml-auto text-[8px] font-black uppercase tracking-widest text-cyan-400 bg-cyan-500/10 px-2 py-1 rounded-full border border-cyan-500/20 animate-pulse">Em Curso</span>}
+                          {item.status === "done" && (
+                            <span className="ml-auto text-[8px] font-black uppercase tracking-widest text-emerald-400 bg-emerald-500/10 px-2 py-1 rounded-full border border-emerald-500/20">
+                              Concluído
+                            </span>
+                          )}
+                          {item.status === "active" && (
+                            <span className="ml-auto text-[8px] font-black uppercase tracking-widest text-cyan-400 bg-cyan-500/10 px-2 py-1 rounded-full border border-cyan-500/20 animate-pulse">
+                              Em Curso
+                            </span>
+                          )}
                         </div>
                         <ul className="space-y-2">
                           {item.items.map((it, j) => (
-                            <li key={j} className="flex items-center gap-3 text-[11px] text-foreground/60 font-bold">
-                              <div className={`w-1.5 h-1.5 rounded-full shrink-0 ${item.status === 'done' ? 'bg-emerald-500' : item.status === 'active' ? 'bg-cyan-500 animate-pulse' : 'bg-foreground/20'}`} />
+                            <li
+                              key={j}
+                              className="flex items-center gap-3 text-[11px] text-foreground/60 font-bold"
+                            >
+                              <div
+                                className={`w-1.5 h-1.5 rounded-full shrink-0 ${
+                                  item.status === "done"
+                                    ? "bg-emerald-500"
+                                    : item.status === "active"
+                                    ? "bg-cyan-500 animate-pulse"
+                                    : "bg-foreground/20"
+                                }`}
+                              />
                               {it}
                             </li>
                           ))}
@@ -524,7 +807,9 @@ export default function NortechLab() {
 
                     {/* Center dot */}
                     <div className="hidden md:flex w-[10%] items-center justify-center relative">
-                      <div className={`w-4 h-4 rounded-full ${c.dot} border-2 border-background shadow-lg z-10`} />
+                      <div
+                        className={`w-4 h-4 rounded-full ${c.dot} border-2 border-background shadow-lg z-10`}
+                      />
                     </div>
 
                     {/* Spacer */}
@@ -537,17 +822,25 @@ export default function NortechLab() {
         </section>
 
         {/* ── CTA ───────────────────────────────────────────────── */}
-        <motion.section initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
-          className="text-center bg-linear-to-br from-cyan-950/30 to-background border border-cyan-500/15 rounded-[3rem] p-10 md:p-16 relative overflow-hidden">
+        <motion.section
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="text-center bg-linear-to-br from-cyan-950/30 to-background border border-cyan-500/15 rounded-[3rem] p-10 md:p-16 relative overflow-hidden"
+        >
           <div className="absolute top-0 left-1/2 -translate-x-1/2 h-px w-full bg-linear-to-r from-transparent via-cyan-500 to-transparent" />
           <FlaskConical className="w-12 h-12 text-cyan-400 mx-auto mb-6" />
           <h2 className="text-2xl md:text-5xl font-black text-foreground mb-4 uppercase italic tracking-tighter pr-2">
             Quer transformar sua ideia em um protótipo?
           </h2>
           <p className="text-foreground/50 mb-8 max-w-xl mx-auto uppercase text-xs font-black tracking-widest">
-            Entre em contato e descubra como o Nortech Lab pode acelerar o desenvolvimento da sua solução.
+            Entre em contato e descubra como o Nortech Lab pode acelerar o
+            desenvolvimento da sua solução.
           </p>
-          <Link href="/contatos" className="inline-flex items-center gap-2 bg-linear-to-r from-cyan-500 to-blue-600 text-black font-black px-10 py-4 rounded-full hover:shadow-[0_0_30px_rgba(0,219,255,0.4)] transition-all uppercase text-[10px] tracking-[0.3em]">
+          <Link
+            href="/contatos"
+            className="inline-flex items-center gap-2 bg-linear-to-r from-cyan-500 to-blue-600 text-black font-black px-10 py-4 rounded-full hover:shadow-[0_0_30px_rgba(0,219,255,0.4)] transition-all uppercase text-[10px] tracking-[0.3em]"
+          >
             Iniciar meu projeto →
           </Link>
         </motion.section>

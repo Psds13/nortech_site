@@ -1,7 +1,9 @@
+"use client";
+
 // ═══════════════════════════════════════════════════════════════════════════
 // NORTECH GAMES - GAMIFICATION ECOSYSTEM
 // ═══════════════════════════════════════════════════════════════════════════
-// Plataforma de jogos educativos e interativos.
+// Plataforma de jogos interativos e educativos.
 // Demonstra: Canvas rendering, game loops, achievement systems, state management
 // ═══════════════════════════════════════════════════════════════════════════
 
@@ -10,33 +12,46 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import {
-  Gamepad2, Zap, Code2,
-  Play, Lock, ChevronRight, Shield, Network, Beaker,
-  Clock, Crown, Sparkles, ArrowRight, BookOpen, Rocket, Globe
+  Gamepad2,
+  Zap,
+  Code2,
+  Play,
+  Lock,
+  ChevronRight,
+  Shield,
+  Beaker,
+  Clock,
+  Crown,
+  Sparkles,
+  ArrowRight,
+  BookOpen,
+  Rocket,
+  Globe,
+  Target,
+  Users,
 } from "lucide-react";
 
 // ─────────────────────────────────────────────────────────────────
 //  XP & LEVEL SYSTEM
 // ─────────────────────────────────────────────────────────────────
-// ─────────────────────────────────────────────────────────────────
 // DADOS: Sistema de achievements
-// Cálculo de XP: cada achievement tem valor em pontos
+// Cálculo de XP: cada achievement tem valor em pontos
 // Levels: 200 XP por level
 // ─────────────────────────────────────────────────────────────────
 const ACHIEVEMENT_LIST = [
-  { id: "first_game",   icon: "🎮", title: "Primeiro Jogo",   desc: "Jogou pela primeira vez",   xp: 50  },
-  { id: "score_100",    icon: "💯", title: "Centurião",       desc: "Marcou 100 pontos",          xp: 75  },
-  { id: "score_500",    icon: "⭐", title: "Astro Gamer",     desc: "500 pontos acumulados",      xp: 150 },
-  { id: "play_3",       icon: "🔥", title: "Em Chamas",       desc: "Jogou 3 jogos diferentes",   xp: 100 },
-  { id: "memory_win",   icon: "🧠", title: "Memória Élite",   desc: "Completou o Jogo da Memória",xp: 120 },
-  { id: "snake_50",     icon: "🐍", title: "Serpente Mestra", desc: "50 pontos no Snake",         xp: 100 },
-  { id: "reflex_ace",   icon: "⚡", title: "Reflexo Ace",     desc: "Reflexo < 200ms",            xp: 130 },
+  { id: "first_game", icon: "🎮", title: "Primeiro Jogo", desc: "Jogou pela primeira vez", xp: 50 },
+  { id: "score_100", icon: "💯", title: "Centurião", desc: "Marcou 100 pontos", xp: 75 },
+  { id: "score_500", icon: "⭐", title: "Astro Gamer", desc: "500 pontos acumulados", xp: 150 },
+  { id: "play_3", icon: "🔥", title: "Em Chamas", desc: "Jogou 3 jogos diferentes", xp: 100 },
+  { id: "memory_win", icon: "🧠", title: "Memória Élite", desc: "Completou o Jogo da Memória", xp: 120 },
+  { id: "snake_50", icon: "🐍", title: "Serpente Mestra", desc: "50 pontos no Snake", xp: 100 },
+  { id: "reflex_ace", icon: "⚡", title: "Reflexo Ace", desc: "Reflexo < 200ms", xp: 130 },
 ];
 
 /**
  * Hook customizado para gerenciar estado do sistema de gamificação
  * Responsável por: XP, level, achievements e scores
- * 
+ *
  * Boas práticas:
  * - useCallback para evitar re-renders desnecessários
  * - Set para performances O(1) em lookups
@@ -52,30 +67,36 @@ function useGamesState() {
   const xpInLevel = xp % 200;
   const xpToNext = 200;
 
-  const unlock = useCallback((id: string) => {
-    if (achievements.has(id)) return;
-    const ach = ACHIEVEMENT_LIST.find(a => a.id === id);
-    if (!ach) return;
-    setAchievements(prev => new Set([...prev, id]));
-    setXp(prev => prev + ach.xp);
-    setNewAch(ach);
-    setTimeout(() => setNewAch(null), 3500);
-  }, [achievements]);
+  const unlock = useCallback(
+    (id: string) => {
+      if (achievements.has(id)) return;
+      const ach = ACHIEVEMENT_LIST.find((a) => a.id === id);
+      if (!ach) return;
+      setAchievements((prev) => new Set([...prev, id]));
+      setXp((prev) => prev + ach.xp);
+      setNewAch(ach);
+      setTimeout(() => setNewAch(null), 3500);
+    },
+    [achievements]
+  );
 
-  const addScore = useCallback((pts: number, gameId: string) => {
-    setTotalScore(prev => {
-      const next = prev + pts;
-      if (next >= 100) unlock("score_100");
-      if (next >= 500) unlock("score_500");
-      return next;
-    });
-    setGamesPlayed(prev => {
-      const next = new Set([...prev, gameId]);
-      if (next.size === 1) unlock("first_game");
-      if (next.size >= 3) unlock("play_3");
-      return next;
-    });
-  }, [unlock]);
+  const addScore = useCallback(
+    (pts: number, gameId: string) => {
+      setTotalScore((prev) => {
+        const next = prev + pts;
+        if (next >= 100) unlock("score_100");
+        if (next >= 500) unlock("score_500");
+        return next;
+      });
+      setGamesPlayed((prev) => {
+        const next = new Set([...prev, gameId]);
+        if (next.size === 1) unlock("first_game");
+        if (next.size >= 3) unlock("play_3");
+        return next;
+      });
+    },
+    [unlock]
+  );
 
   return { xp, level, xpInLevel, xpToNext, gamesPlayed, totalScore, achievements, newAch, unlock, addScore };
 }
@@ -91,7 +112,7 @@ type Dir = { x: number; y: number };
 /**
  * Jogo Snake implementado com Canvas
  * Demonstra: game loop, detecção de colisão, renderização dinâmica
- * 
+ *
  * Performance: requestAnimationFrame para 60fps
  */
 function SnakeGame({ onScore, onUnlock }: { onScore: (n: number, id: string) => void; onUnlock: (id: string) => void }) {
@@ -112,28 +133,35 @@ function SnakeGame({ onScore, onUnlock }: { onScore: (n: number, id: string) => 
 
   const randFood = (snake: { x: number; y: number }[]) => {
     let f: { x: number; y: number };
-    do { f = { x: Math.floor(Math.random() * COLS), y: Math.floor(Math.random() * ROWS) }; }
-    while (snake.some(s => s.x === f.x && s.y === f.y));
+    do {
+      f = { x: Math.floor(Math.random() * COLS), y: Math.floor(Math.random() * ROWS) };
+    } while (snake.some((s) => s.x === f.x && s.y === f.y));
     return f;
   };
 
   const start = () => {
     const s = stateRef.current;
     s.snake = [{ x: 8, y: 8 }];
-    s.dir = { x: 1, y: 0 }; s.next = { x: 1, y: 0 };
-    s.food = randFood(s.snake); s.score = 0; s.running = true; s.dead = false;
+    s.dir = { x: 1, y: 0 };
+    s.next = { x: 1, y: 0 };
+    s.food = randFood(s.snake);
+    s.score = 0;
+    s.running = true;
+    s.dead = false;
     reported50.current = false;
-    setScore(0); setRunning(true); setDead(false);
+    setScore(0);
+    setRunning(true);
+    setDead(false);
   };
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const d = stateRef.current.dir;
-      if (e.key === "ArrowUp"    && d.y !== 1)  stateRef.current.next = { x: 0, y: -1 };
-      if (e.key === "ArrowDown"  && d.y !== -1) stateRef.current.next = { x: 0, y: 1 };
-      if (e.key === "ArrowLeft"  && d.x !== 1)  stateRef.current.next = { x: -1, y: 0 };
+      if (e.key === "ArrowUp" && d.y !== 1) stateRef.current.next = { x: 0, y: -1 };
+      if (e.key === "ArrowDown" && d.y !== -1) stateRef.current.next = { x: 0, y: 1 };
+      if (e.key === "ArrowLeft" && d.x !== 1) stateRef.current.next = { x: -1, y: 0 };
       if (e.key === "ArrowRight" && d.x !== -1) stateRef.current.next = { x: 1, y: 0 };
-      if (["ArrowUp","ArrowDown","ArrowLeft","ArrowRight"].includes(e.key)) e.preventDefault();
+      if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.key)) e.preventDefault();
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
@@ -150,22 +178,42 @@ function SnakeGame({ onScore, onUnlock }: { onScore: (n: number, id: string) => 
       s.dir = s.next;
       const head = { x: s.snake[0].x + s.dir.x, y: s.snake[0].y + s.dir.y };
 
-      if (head.x < 0 || head.x >= COLS || head.y < 0 || head.y >= ROWS || s.snake.some(b => b.x === head.x && b.y === head.y)) {
-        s.running = false; s.dead = true;
+      if (
+        head.x < 0 ||
+        head.x >= COLS ||
+        head.y < 0 ||
+        head.y >= ROWS ||
+        s.snake.some((b) => b.x === head.x && b.y === head.y)
+      ) {
+        s.running = false;
+        s.dead = true;
         onScore(s.score, "snake");
-        if (!reported50.current && s.score >= 50) { onUnlock("snake_50"); reported50.current = true; }
-        setRunning(false); setDead(true); return;
+        if (!reported50.current && s.score >= 50) {
+          onUnlock("snake_50");
+          reported50.current = true;
+        }
+        setRunning(false);
+        setDead(true);
+        return;
       }
 
       s.snake.unshift(head);
       if (head.x === s.food.x && head.y === s.food.y) {
-        s.score += 10; s.food = randFood(s.snake);
+        s.score += 10;
+        s.food = randFood(s.snake);
         setScore(s.score);
-        if (s.score >= 50 && !reported50.current) { onUnlock("snake_50"); reported50.current = true; }
-      } else { s.snake.pop(); }
+        if (s.score >= 50 && !reported50.current) {
+          onUnlock("snake_50");
+          reported50.current = true;
+        }
+      } else {
+        s.snake.pop();
+      }
 
-      ctx.fillStyle = "#050510"; ctx.fillRect(0, 0, COLS * CELL, ROWS * CELL);
-      ctx.fillStyle = "#ef4444"; ctx.fillRect(s.food.x * CELL + 3, s.food.y * CELL + 3, CELL - 6, CELL - 6);
+      ctx.fillStyle = "#050510";
+      ctx.fillRect(0, 0, COLS * CELL, ROWS * CELL);
+      ctx.fillStyle = "#ef4444";
+      ctx.fillRect(s.food.x * CELL + 3, s.food.y * CELL + 3, CELL - 6, CELL - 6);
       s.snake.forEach((b, i) => {
         ctx.fillStyle = i === 0 ? "#22d3ee" : `rgba(34,211,238,${Math.max(0.3, 1 - i * 0.06)})`;
         ctx.beginPath();
@@ -177,7 +225,9 @@ function SnakeGame({ onScore, onUnlock }: { onScore: (n: number, id: string) => 
     return () => clearInterval(id);
   }, [onScore, onUnlock]);
 
-  const touchDir = (dir: Dir) => { stateRef.current.next = dir; };
+  const touchDir = (dir: Dir) => {
+    stateRef.current.next = dir;
+  };
 
   return (
     <div className="flex flex-col items-center gap-4 w-full max-w-full">
@@ -186,20 +236,49 @@ function SnakeGame({ onScore, onUnlock }: { onScore: (n: number, id: string) => 
         <span className="text-foreground/40 text-xs">Use as setas para mover</span>
       </div>
       <div className="relative w-full max-w-[320px] aspect-square">
-        <canvas ref={canvasRef} width={COLS * CELL} height={ROWS * CELL}
-          className="w-full h-full rounded-xl border border-foreground/10 bg-[#050510]" />
+        <canvas
+          ref={canvasRef}
+          width={COLS * CELL}
+          height={ROWS * CELL}
+          className="w-full h-full rounded-xl border border-foreground/10 bg-[#050510]"
+        />
       </div>
       {!running && (
-        <button onClick={start} className="px-6 py-2.5 bg-purple-600 text-white font-medium rounded-lg text-sm hover:opacity-90 transition-opacity">
+        <button
+          onClick={start}
+          className="px-6 py-2.5 bg-purple-600 text-white font-medium rounded-lg text-sm hover:opacity-90 transition-opacity"
+        >
           {dead ? "Jogar novamente" : "Iniciar Snake"}
         </button>
       )}
       {running && (
         <div className="grid grid-cols-3 gap-2 w-32 mt-2">
-          <div /><button onPointerDown={() => touchDir({ x: 0, y: -1 })} className="bg-foreground/10 rounded-xl py-3 text-foreground font-black text-lg hover:bg-foreground/20 active:bg-cyan-500/20">↑</button><div />
-          <button onPointerDown={() => touchDir({ x: -1, y: 0 })} className="bg-foreground/10 rounded-xl py-3 text-foreground font-black text-lg hover:bg-foreground/20 active:bg-cyan-500/20">←</button>
-          <button onPointerDown={() => touchDir({ x: 0, y: 1 })}  className="bg-foreground/10 rounded-xl py-3 text-foreground font-black text-lg hover:bg-foreground/20 active:bg-cyan-500/20">↓</button>
-          <button onPointerDown={() => touchDir({ x: 1, y: 0 })}  className="bg-foreground/10 rounded-xl py-3 text-foreground font-black text-lg hover:bg-foreground/20 active:bg-cyan-500/20">→</button>
+          <div />
+          <button
+            onPointerDown={() => touchDir({ x: 0, y: -1 })}
+            className="bg-foreground/10 rounded-xl py-3 text-foreground font-black text-lg hover:bg-foreground/20 active:bg-cyan-500/20"
+          >
+            ↑
+          </button>
+          <div />
+          <button
+            onPointerDown={() => touchDir({ x: -1, y: 0 })}
+            className="bg-foreground/10 rounded-xl py-3 text-foreground font-black text-lg hover:bg-foreground/20 active:bg-cyan-500/20"
+          >
+            ←
+          </button>
+          <button
+            onPointerDown={() => touchDir({ x: 0, y: 1 })}
+            className="bg-foreground/10 rounded-xl py-3 text-foreground font-black text-lg hover:bg-foreground/20 active:bg-cyan-500/20"
+          >
+            ↓
+          </button>
+          <button
+            onPointerDown={() => touchDir({ x: 1, y: 0 })}
+            className="bg-foreground/10 rounded-xl py-3 text-foreground font-black text-lg hover:bg-foreground/20 active:bg-cyan-500/20"
+          >
+            →
+          </button>
         </div>
       )}
     </div>
@@ -209,12 +288,14 @@ function SnakeGame({ onScore, onUnlock }: { onScore: (n: number, id: string) => 
 // ─────────────────────────────────────────────────────────────────
 //  GAME: MEMORY
 // ─────────────────────────────────────────────────────────────────
-const EMOJIS = ["🔥","⚡","🎮","🚀","🧠","💎","🌟","🎯","🦾","🕹️","💻","🔮"];
+const EMOJIS = ["🔥", "⚡", "🎮", "🚀", "🧠", "💎", "🌟", "🎯", "🦾", "🕹️", "💻", "🔮"];
 
 function MemoryGame({ onScore, onUnlock }: { onScore: (n: number, id: string) => void; onUnlock: (id: string) => void }) {
   const makeBoard = () => {
     const pairs = [...EMOJIS.slice(0, 8), ...EMOJIS.slice(0, 8)];
-    return pairs.sort(() => Math.random() - 0.5).map((e, i) => ({ id: i, emoji: e, revealed: false, matched: false }));
+    return pairs
+      .sort(() => Math.random() - 0.5)
+      .map((e, i) => ({ id: i, emoji: e, revealed: false, matched: false }));
   };
   const [cards, setCards] = useState(makeBoard);
   const [flipped, setFlipped] = useState<number[]>([]);
@@ -229,16 +310,18 @@ function MemoryGame({ onScore, onUnlock }: { onScore: (n: number, id: string) =>
     if (card.revealed || card.matched || flipped.includes(id)) return;
 
     const newFlipped = [...flipped, id];
-    setCards(prev => prev.map((c, i) => i === id ? { ...c, revealed: true } : c));
+    setCards((prev) => prev.map((c, i) => (i === id ? { ...c, revealed: true } : c)));
     setFlipped(newFlipped);
 
     if (newFlipped.length === 2) {
       checking.current = true;
-      setMoves(m => m + 1);
+      setMoves((m) => m + 1);
       const [a, b] = newFlipped;
       setTimeout(() => {
         if (cards[a].emoji === cards[b].emoji) {
-          setCards(prev => prev.map((c, i) => newFlipped.includes(i) ? { ...c, matched: true, revealed: true } : c));
+          setCards((prev) =>
+            prev.map((c, i) => (newFlipped.includes(i) ? { ...c, matched: true, revealed: true } : c))
+          );
           const newMatches = matches + 1;
           setMatches(newMatches);
           if (newMatches === 8) {
@@ -248,7 +331,9 @@ function MemoryGame({ onScore, onUnlock }: { onScore: (n: number, id: string) =>
             setWon(true);
           }
         } else {
-          setCards(prev => prev.map((c, i) => newFlipped.includes(i) ? { ...c, revealed: false } : c));
+          setCards((prev) =>
+            prev.map((c, i) => (newFlipped.includes(i) ? { ...c, revealed: false } : c))
+          );
         }
         setFlipped([]);
         checking.current = false;
@@ -256,7 +341,14 @@ function MemoryGame({ onScore, onUnlock }: { onScore: (n: number, id: string) =>
     }
   };
 
-  const reset = () => { setCards(makeBoard()); setFlipped([]); setMoves(0); setMatches(0); setWon(false); checking.current = false; };
+  const reset = () => {
+    setCards(makeBoard());
+    setFlipped([]);
+    setMoves(0);
+    setMatches(0);
+    setWon(false);
+    checking.current = false;
+  };
 
   return (
     <div className="flex flex-col items-center gap-4">
@@ -266,22 +358,39 @@ function MemoryGame({ onScore, onUnlock }: { onScore: (n: number, id: string) =>
       </div>
       <div className="grid grid-cols-4 gap-2 w-full max-w-[280px]">
         {cards.map((card, i) => (
-          <motion.button key={card.id} onClick={() => flip(i)} whileTap={{ scale: 0.9 }}
+          <motion.button
+            key={card.id}
+            onClick={() => flip(i)}
+            whileTap={{ scale: 0.9 }}
             className={`aspect-square rounded-xl text-xl flex items-center justify-center border transition-all font-black
-              ${card.matched ? "bg-purple-500/20 border-purple-500/40 cursor-default" :
-                card.revealed ? "bg-foreground/[0.08] border-foreground/20 shadow-inner" :
-                "bg-foreground/[0.04] border-foreground/10 hover:border-purple-500/30 cursor-pointer shadow-sm"}`}>
+              ${
+                card.matched
+                  ? "bg-purple-500/20 border-purple-500/40 cursor-default"
+                  : card.revealed
+                  ? "bg-foreground/[0.08] border-foreground/20 shadow-inner"
+                  : "bg-foreground/[0.04] border-foreground/10 hover:border-purple-500/30 cursor-pointer shadow-sm"
+              }`}
+          >
             {(card.revealed || card.matched) ? card.emoji : "?"}
           </motion.button>
         ))}
       </div>
       {won ? (
         <div className="text-center space-y-3">
-          <p className="text-purple-600 dark:text-purple-400 font-medium text-sm">Parabéns! +{Math.max(0, 300 - moves * 10)} XP</p>
-          <button onClick={reset} className="px-6 py-2.5 bg-purple-600 text-white font-medium rounded-lg text-sm hover:opacity-90">Jogar novamente</button>
+          <p className="text-purple-600 dark:text-purple-400 font-medium text-sm">
+            Parabéns! +{Math.max(0, 300 - moves * 10)} XP
+          </p>
+          <button
+            onClick={reset}
+            className="px-6 py-2.5 bg-purple-600 text-white font-medium rounded-lg text-sm hover:opacity-90"
+          >
+            Jogar novamente
+          </button>
         </div>
       ) : (
-        <button onClick={reset} className="text-foreground/40 text-xs hover:text-foreground/70 transition-colors">Reiniciar</button>
+        <button onClick={reset} className="text-foreground/40 text-xs hover:text-foreground/70 transition-colors">
+          Reiniciar
+        </button>
       )}
     </div>
   );
@@ -301,26 +410,38 @@ function ReflexGame({ onScore, onUnlock }: { onScore: (n: number, id: string) =>
   const begin = () => {
     setPhase("waiting");
     const delay = 2000 + Math.random() * 3000;
-    timeoutRef.current = setTimeout(() => { setPhase("ready"); startTime.current = Date.now(); }, delay);
+    timeoutRef.current = setTimeout(() => {
+      setPhase("ready");
+      startTime.current = Date.now();
+    }, delay);
   };
 
   const click = () => {
-    if (phase === "waiting") { clearTimeout(timeoutRef.current); setPhase("idle"); return; }
+    if (phase === "waiting") {
+      clearTimeout(timeoutRef.current);
+      setPhase("idle");
+      return;
+    }
     if (phase === "ready") {
       const elapsed = Date.now() - startTime.current;
-      setMs(elapsed); setPhase("result");
+      setMs(elapsed);
+      setPhase("result");
       const newBest = Math.min(best, elapsed);
       setBest(newBest);
-      setHistory(prev => [...prev.slice(-4), elapsed]);
+      setHistory((prev) => [...prev.slice(-4), elapsed]);
       onScore(Math.max(0, 500 - elapsed), "reflex");
       if (elapsed < 200) onUnlock("reflex_ace");
     }
   };
 
-  const rating = ms < 150 ? { label: "Excelente", color: "text-yellow-600 dark:text-yellow-400" }
-    : ms < 250 ? { label: "Muito rápido", color: "text-cyan-600 dark:text-cyan-400" }
-    : ms < 400 ? { label: "Bom", color: "text-emerald-600 dark:text-emerald-400" }
-    : { label: "Pode melhorar", color: "text-orange-500" };
+  const rating =
+    ms < 150
+      ? { label: "Excelente", color: "text-yellow-600 dark:text-yellow-400" }
+      : ms < 250
+      ? { label: "Muito rápido", color: "text-cyan-600 dark:text-cyan-400" }
+      : ms < 400
+      ? { label: "Bom", color: "text-emerald-600 dark:text-emerald-400" }
+      : { label: "Pode melhorar", color: "text-orange-500" };
 
   return (
     <div className="flex flex-col items-center gap-6">
@@ -329,23 +450,56 @@ function ReflexGame({ onScore, onUnlock }: { onScore: (n: number, id: string) =>
         <span className="text-foreground/40 text-xs">Tentativas: {history.length}</span>
       </div>
 
-      <motion.button onClick={phase === "idle" || phase === "result" ? begin : click}
+      <motion.button
+        onClick={phase === "idle" || phase === "result" ? begin : click}
         animate={{ scale: phase === "ready" ? [1, 1.05, 1] : 1 }}
         transition={{ repeat: phase === "ready" ? Infinity : 0, duration: 0.3 }}
         className={`w-48 h-48 rounded-xl flex flex-col items-center justify-center text-center transition-all border-2 cursor-pointer select-none
-          ${phase === "idle" || phase === "result" ? "bg-foreground/[0.04] border-foreground/10 hover:border-purple-500/30" :
-            phase === "waiting" ? "bg-red-500/10 border-red-500/30" :
-            "bg-yellow-400 border-yellow-300"}`}>
-        {phase === "idle"    && <><Zap className="w-8 h-8 text-yellow-500 mb-3" /><span className="text-foreground font-medium text-sm">Toque para iniciar</span></>}
-        {phase === "waiting" && <><Clock className="w-8 h-8 text-red-500 mb-3" /><span className="text-foreground/60 font-medium text-sm">Aguarde...</span><span className="text-foreground/40 text-xs mt-1">Não toque ainda</span></>}
-        {phase === "ready"   && <><Zap className="w-10 h-10 text-black mb-2" /><span className="text-black font-semibold text-lg">Agora!</span></>}
-        {phase === "result"  && <><span className="text-3xl font-semibold text-foreground">{ms} ms</span><span className={`text-sm font-medium mt-2 ${rating.color}`}>{rating.label}</span><span className="text-foreground/40 text-xs mt-3">Toque para tentar novamente</span></>}
+          ${
+            phase === "idle" || phase === "result"
+              ? "bg-foreground/[0.04] border-foreground/10 hover:border-purple-500/30"
+              : phase === "waiting"
+              ? "bg-red-500/10 border-red-500/30"
+              : "bg-yellow-400 border-yellow-300"
+          }`}
+      >
+        {phase === "idle" && (
+          <>
+            <Zap className="w-8 h-8 text-yellow-500 mb-3" />
+            <span className="text-foreground font-medium text-sm">Toque para iniciar</span>
+          </>
+        )}
+        {phase === "waiting" && (
+          <>
+            <Clock className="w-8 h-8 text-red-500 mb-3" />
+            <span className="text-foreground/60 font-medium text-sm">Aguarde...</span>
+            <span className="text-foreground/40 text-xs mt-1">Não toque ainda</span>
+          </>
+        )}
+        {phase === "ready" && (
+          <>
+            <Zap className="w-10 h-10 text-black mb-2" />
+            <span className="text-black font-semibold text-lg">Agora!</span>
+          </>
+        )}
+        {phase === "result" && (
+          <>
+            <span className="text-3xl font-semibold text-foreground">{ms} ms</span>
+            <span className={`text-sm font-medium mt-2 ${rating.color}`}>{rating.label}</span>
+            <span className="text-foreground/40 text-xs mt-3">Toque para tentar novamente</span>
+          </>
+        )}
       </motion.button>
 
       {history.length > 0 && (
         <div className="flex items-end gap-1.5 h-12 w-full max-w-[220px]">
           {history.map((h, i) => (
-            <div key={i} className="flex-1 rounded-t-md bg-yellow-500/50" style={{ height: `${Math.min(100, (500 - h) / 5)}%` }} title={`${h}ms`} />
+            <div
+              key={i}
+              className="flex-1 rounded-t-md bg-yellow-500/50"
+              style={{ height: `${Math.min(100, (500 - h) / 5)}%` }}
+              title={`${h}ms`}
+            />
           ))}
         </div>
       )}
@@ -357,60 +511,149 @@ function ReflexGame({ onScore, onUnlock }: { onScore: (n: number, id: string) =>
 //  MAIN PAGE
 // ─────────────────────────────────────────────────────────────────
 const GAMES_LIST = [
-  { id: "snake",   title: "Nortech Snake",    desc: "Clássico snake com visual moderno",              category: "Arcade",   locked: false, color: "cyan",    icon: Gamepad2 },
-  { id: "memory",  title: "Memory Tech",      desc: "Teste sua memória com pares de símbolos",          category: "Puzzle",   locked: false, color: "purple",  icon: Sparkles },
-  { id: "reflex",  title: "Reflex Challenge", desc: "Quanto tempo seu reflexo leva?",                   category: "Skill",    locked: false, color: "yellow",  icon: Zap },
-  { id: "code",    title: "Code Runner",      desc: "Aventura de programação em plataforma 2D",         category: "Em breve", locked: true,  color: "blue",    icon: Code2 },
-  { id: "builder", title: "City Builder",     desc: "Construa cidades com tecnologia Nortech",          category: "Em breve", locked: true,  color: "emerald", icon: Rocket },
-  { id: "hack",    title: "HackSim",          desc: "Simulador de hacking ético e segurança",           category: "Em breve", locked: true,  color: "red",     icon: Shield },
+  {
+    id: "snake",
+    title: "Nortech Snake",
+    desc: "Clássico snake com visual moderno",
+    category: "Arcade",
+    locked: false,
+    color: "cyan",
+    icon: Gamepad2,
+  },
+  {
+    id: "memory",
+    title: "Memory Tech",
+    desc: "Teste sua memória com pares de símbolos",
+    category: "Puzzle",
+    locked: false,
+    color: "purple",
+    icon: Sparkles,
+  },
+  {
+    id: "reflex",
+    title: "Reflex Challenge",
+    desc: "Quanto tempo seu reflexo leva?",
+    category: "Skill",
+    locked: false,
+    color: "yellow",
+    icon: Zap,
+  },
+  {
+    id: "code",
+    title: "Code Runner",
+    desc: "Aventura de programação em plataforma 2D",
+    category: "Em breve",
+    locked: true,
+    color: "blue",
+    icon: Code2,
+  },
+  {
+    id: "builder",
+    title: "City Builder",
+    desc: "Construa cidades com tecnologia Nortech",
+    category: "Em breve",
+    locked: true,
+    color: "emerald",
+    icon: Rocket,
+  },
+  {
+    id: "hack",
+    title: "HackSim",
+    desc: "Simulador de hacking ético e segurança",
+    category: "Em breve",
+    locked: true,
+    color: "red",
+    icon: Shield,
+  },
 ];
 
 const colorMap: Record<string, string> = {
-  cyan:    "bg-cyan-500/10 border-cyan-500/20 text-cyan-400",
-  purple:  "bg-purple-500/10 border-purple-500/20 text-purple-400",
-  yellow:  "bg-yellow-500/10 border-yellow-500/20 text-yellow-400",
-  blue:    "bg-blue-500/10 border-blue-500/20 text-blue-400",
+  cyan: "bg-cyan-500/10 border-cyan-500/20 text-cyan-400",
+  purple: "bg-purple-500/10 border-purple-500/20 text-purple-400",
+  yellow: "bg-yellow-500/10 border-yellow-500/20 text-yellow-400",
+  blue: "bg-blue-500/10 border-blue-500/20 text-blue-400",
   emerald: "bg-emerald-500/10 border-emerald-500/20 text-emerald-400",
-  red:     "bg-red-500/10 border-red-500/20 text-red-400",
+  red: "bg-red-500/10 border-red-500/20 text-red-400",
 };
 
 const devTools = [
-  { icon: <Globe className="w-6 h-6" />, name: "HTML5 / Canvas", desc: "Jogos web nativos sem dependências pesadas", color: "cyan" },
-  { icon: <Gamepad2 className="w-6 h-6" />, name: "Phaser.js", desc: "Framework 2D para jogos complexos e robustos", color: "purple" },
-  { icon: <Code2 className="w-6 h-6" />, name: "Three.js", desc: "Ambientes 3D imersivos para jogos em perspectiva", color: "blue" },
-  { icon: <Rocket className="w-6 h-6" />, name: "React + Framer", desc: "Interfaces gamer com animações fluidas", color: "yellow" },
-  { icon: <Shield className="w-6 h-6" />, name: "Supabase", desc: "Backend para rankings e saves na nuvem", color: "emerald" },
-  { icon: <BookOpen className="w-6 h-6" />, name: "WebAssembly", desc: "Performance máxima com Rust/C++ no navegador", color: "red" },
+  {
+    icon: <Globe className="w-6 h-6" />,
+    name: "HTML5 / Canvas",
+    desc: "Jogos web nativos sem dependências pesadas",
+    color: "cyan",
+  },
+  {
+    icon: <Gamepad2 className="w-6 h-6" />,
+    name: "Phaser.js",
+    desc: "Framework 2D para jogos complexos e robustos",
+    color: "purple",
+  },
+  {
+    icon: <Code2 className="w-6 h-6" />,
+    name: "Three.js",
+    desc: "Ambientes 3D imersivos para jogos em perspectiva",
+    color: "blue",
+  },
+  {
+    icon: <Rocket className="w-6 h-6" />,
+    name: "React + Framer",
+    desc: "Interfaces gamer com animações fluidas",
+    color: "yellow",
+  },
+  {
+    icon: <Shield className="w-6 h-6" />,
+    name: "Supabase",
+    desc: "Backend para rankings e saves na nuvem",
+    color: "emerald",
+  },
+  {
+    icon: <BookOpen className="w-6 h-6" />,
+    name: "WebAssembly",
+    desc: "Performance máxima com Rust/C++ no navegador",
+    color: "red",
+  },
 ];
 
 export default function NortechGames() {
   const gs = useGamesState();
   const [activeGame, setActiveGame] = useState<string | null>(null);
   const [, setSection] = useState<"play" | "dev" | "community">("play");
-  const [particles, setParticles] = useState<{left: string, top: string, duration: number, delay: number}[]>([]);
+  const [particles, setParticles] = useState<
+    { left: string; top: string; duration: number; delay: number }[]
+  >([]);
 
   useEffect(() => {
-    setParticles([...Array(20)].map(() => ({
-      left: `${Math.random() * 100}%`,
-      top: `${Math.random() * 100}%`,
-      duration: 3 + Math.random() * 4,
-      delay: Math.random() * 2
-    })));
+    setParticles(
+      [...Array(20)].map(() => ({
+        left: `${Math.random() * 100}%`,
+        top: `${Math.random() * 100}%`,
+        duration: 3 + Math.random() * 4,
+        delay: Math.random() * 2,
+      }))
+    );
   }, []);
 
-  const GameComponent = activeGame === "snake"  ? <SnakeGame  onScore={gs.addScore} onUnlock={gs.unlock} />
-                      : activeGame === "memory" ? <MemoryGame onScore={gs.addScore} onUnlock={gs.unlock} />
-                      : activeGame === "reflex" ? <ReflexGame onScore={gs.addScore} onUnlock={gs.unlock} />
-                      : null;
+  const GameComponent =
+    activeGame === "snake" ? (
+      <SnakeGame onScore={gs.addScore} onUnlock={gs.unlock} />
+    ) : activeGame === "memory" ? (
+      <MemoryGame onScore={gs.addScore} onUnlock={gs.unlock} />
+    ) : activeGame === "reflex" ? (
+      <ReflexGame onScore={gs.addScore} onUnlock={gs.unlock} />
+    ) : null;
 
   return (
     <main className="bg-background min-h-screen text-foreground">
-
       {/* ── Achievement Toast ──────────────────────────────────── */}
       <AnimatePresence>
         {gs.newAch && (
-          <motion.div initial={{ opacity: 0, y: -80, x: "-50%" }} animate={{ opacity: 1, y: 0, x: "-50%" }} exit={{ opacity: 0, y: -80, x: "-50%" }}
-            className="fixed top-24 left-1/2 z-[100] bg-yellow-400 text-black px-8 py-4 rounded-2xl shadow-2xl flex items-center gap-4 font-black">
+          <motion.div
+            initial={{ opacity: 0, y: -80, x: "-50%" }}
+            animate={{ opacity: 1, y: 0, x: "-50%" }}
+            exit={{ opacity: 0, y: -80, x: "-50%" }}
+            className="fixed top-24 left-1/2 z-[100] bg-yellow-400 text-black px-8 py-4 rounded-2xl shadow-2xl flex items-center gap-4 font-black"
+          >
             <span className="text-3xl">{gs.newAch.icon}</span>
             <div>
               <p className="text-xs uppercase tracking-widest opacity-70">Conquista Desbloqueada!</p>
@@ -425,26 +668,33 @@ export default function NortechGames() {
       <section className="relative pt-28 pb-24 overflow-hidden border-b border-foreground/5">
         {/* Particle Background */}
         <div className="absolute inset-0 pointer-events-none -z-10">
-          <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: `radial-gradient(circle, rgba(168,85,247,0.8) 1.5px, transparent 1.5px)`, backgroundSize: "40px 40px" }} />
+          <div
+            className="absolute inset-0 opacity-[0.03]"
+            style={{
+              backgroundImage: `radial-gradient(circle, rgba(168,85,247,0.8) 1.5px, transparent 1.5px)`,
+              backgroundSize: "40px 40px",
+            }}
+          />
           <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1200px] h-[700px] bg-purple-600/10 blur-[150px] rounded-full" />
           <div className="absolute bottom-[-10%] right-[-5%] w-[600px] h-[500px] bg-cyan-500/10 blur-[120px] rounded-full" />
           <div className="absolute top-[20%] left-[-5%] w-[500px] h-[500px] bg-yellow-500/5 blur-[120px] rounded-full" />
           {/* Floating particles */}
           {particles.map((p, i) => (
-            <motion.div key={i}
+            <motion.div
+              key={i}
               className="absolute w-2 h-2 rounded-full bg-linear-to-br from-purple-400 to-cyan-400 opacity-20 shadow-[0_0_10px_rgba(34,211,238,0.5)]"
               style={{ left: p.left, top: p.top }}
-              animate={{ 
-                y: [0, -20, 0], 
+              animate={{
+                y: [0, -20, 0],
                 x: [0, 10, 0],
                 opacity: [0.1, 0.4, 0.1],
-                scale: [1, 1.2, 1]
+                scale: [1, 1.2, 1],
               }}
-              transition={{ 
-                repeat: Infinity, 
-                duration: p.duration, 
+              transition={{
+                repeat: Infinity,
+                duration: p.duration,
                 delay: p.delay,
-                ease: "easeInOut"
+                ease: "easeInOut",
               }}
             />
           ))}
@@ -452,9 +702,19 @@ export default function NortechGames() {
 
         <div className="max-w-7xl mx-auto px-6 relative z-10">
           <div className="flex flex-col xl:flex-row items-center gap-12 lg:gap-20">
-            <motion.div className="xl:w-1/2 text-left" initial={{ opacity: 0, x: -30 }} animate={{ opacity: 1, x: 0, y: 0 }} transition={{ duration: 0.8 }}>
-              <motion.div initial={{ scale: 0 }} whileInView={{ scale: 1 }} viewport={{ once: true }} transition={{ type: "spring" }}
-                className="inline-flex items-center justify-center w-20 h-20 bg-purple-500/10 border border-purple-500/20 rounded-[2rem] mb-8 shadow-[0_0_40px_rgba(168,85,247,0.2)]">
+            <motion.div
+              className="xl:w-1/2 text-left"
+              initial={{ opacity: 0, x: -30 }}
+              animate={{ opacity: 1, x: 0, y: 0 }}
+              transition={{ duration: 0.8 }}
+            >
+              <motion.div
+                initial={{ scale: 0 }}
+                whileInView={{ scale: 1 }}
+                viewport={{ once: true }}
+                transition={{ type: "spring" }}
+                className="inline-flex items-center justify-center w-20 h-20 bg-purple-500/10 border border-purple-500/20 rounded-[2rem] mb-8 shadow-[0_0_40px_rgba(168,85,247,0.2)]"
+              >
                 <Gamepad2 className="w-10 h-10 text-purple-400" />
               </motion.div>
 
@@ -463,29 +723,39 @@ export default function NortechGames() {
               </span>
 
               <h1 className="text-4xl md:text-7xl lg:text-8xl font-black mb-8 leading-none uppercase text-foreground">
-  <span className="block">Nortech</span>
-
-  <span
-    className="block italic text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-cyan-400 to-yellow-400"
-    style={{
-      paddingRight: "6px",
-      paddingBottom: "6px",
-    }}
-  >
-    Games
-  </span>
-</h1>
+                <span className="block">Nortech</span>
+                <span
+                  className="block italic text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-cyan-400 to-yellow-400"
+                  style={{
+                    paddingRight: "6px",
+                    paddingBottom: "6px",
+                  }}
+                >
+                  Games
+                </span>
+              </h1>
               <p className="text-base md:text-lg text-foreground/60 max-w-xl mb-10 font-bold uppercase tracking-tight leading-relaxed">
-                Uma plataforma imersiva onde tecnologia e criatividade se fundem. Jogue títulos exclusivos, colecione conquistas e desenvolva o futuro do entretenimento digital.
+                Plataforma de jogos interativos desenvolvida pela Nortech. Divirta-se, aprenda e conquiste títulos
+                exclusivos.
               </p>
 
               <div className="flex flex-wrap gap-4 mb-16">
-                <button onClick={() => { setSection("play"); document.getElementById("play-section")?.scrollIntoView({ behavior: "smooth" }); }}
-                  className="inline-flex items-center gap-3 bg-purple-500 hover:bg-purple-400 text-white font-black px-8 py-4 rounded-full transition-all shadow-[0_10px_30px_rgba(168,85,247,0.3)] uppercase text-[10px] tracking-[0.3em]">
+                <button
+                  onClick={() => {
+                    setSection("play");
+                    document.getElementById("play-section")?.scrollIntoView({ behavior: "smooth" });
+                  }}
+                  className="inline-flex items-center gap-3 bg-purple-500 hover:bg-purple-400 text-white font-black px-8 py-4 rounded-full transition-all shadow-[0_10px_30px_rgba(168,85,247,0.3)] uppercase text-[10px] tracking-[0.3em]"
+                >
                   <Play className="w-4 h-4 fill-current" /> Jogar Agora
                 </button>
-                <button onClick={() => { setSection("dev"); document.getElementById("dev-section")?.scrollIntoView({ behavior: "smooth" }); }}
-                  className="inline-flex items-center gap-3 border border-foreground/10 hover:border-purple-500/40 text-foreground font-black px-8 py-4 rounded-full transition-all uppercase text-[10px] tracking-[0.3em]">
+                <button
+                  onClick={() => {
+                    setSection("dev");
+                    document.getElementById("dev-section")?.scrollIntoView({ behavior: "smooth" });
+                  }}
+                  className="inline-flex items-center gap-3 border border-foreground/10 hover:border-purple-500/40 text-foreground font-black px-8 py-4 rounded-full transition-all uppercase text-[10px] tracking-[0.3em]"
+                >
                   <Code2 className="w-4 h-4" /> Criar meu Jogo
                 </button>
               </div>
@@ -497,19 +767,26 @@ export default function NortechGames() {
                     <Crown className="w-7 h-7 text-yellow-400" />
                   </div>
                   <div className="text-left">
-                    <p className="text-[10px] font-black uppercase tracking-widest text-foreground/40 leading-none mb-1">Status do Player</p>
+                    <p className="text-[10px] font-black uppercase tracking-widest text-foreground/40 leading-none mb-1">
+                      Status do Player
+                    </p>
                     <p className="text-2xl font-black text-foreground italic uppercase leading-none">NÍVEL {gs.level}</p>
                   </div>
                 </div>
-                
+
                 <div className="flex-1 sm:w-48 text-left py-2 border-y sm:border-y-0 sm:border-x border-foreground/5 sm:px-6">
                   <div className="flex justify-between mb-2">
                     <span className="text-[9px] font-black uppercase tracking-widest text-foreground/40">Experiência</span>
-                    <span className="text-[9px] font-black text-purple-400">{gs.xpInLevel} / {gs.xpToNext} XP</span>
+                    <span className="text-[9px] font-black text-purple-400">
+                      {gs.xpInLevel} / {gs.xpToNext} XP
+                    </span>
                   </div>
                   <div className="w-full h-1.5 bg-foreground/10 rounded-full overflow-hidden">
-                    <motion.div className="h-full bg-gradient-to-r from-purple-500 to-cyan-500 rounded-full shadow-[0_0_10px_rgba(168,85,247,0.5)]"
-                      animate={{ width: `${(gs.xpInLevel / gs.xpToNext) * 100}%` }} transition={{ duration: 0.8, ease: "easeOut" }} />
+                    <motion.div
+                      className="h-full bg-gradient-to-r from-purple-500 to-cyan-500 rounded-full shadow-[0_0_10px_rgba(168,85,247,0.5)]"
+                      animate={{ width: `${(gs.xpInLevel / gs.xpToNext) * 100}%` }}
+                      transition={{ duration: 0.8, ease: "easeOut" }}
+                    />
                   </div>
                 </div>
 
@@ -527,7 +804,12 @@ export default function NortechGames() {
             </motion.div>
 
             {/* Image Section */}
-            <motion.div className="xl:w-1/2 relative w-full flex justify-center xl:justify-end" initial={{ opacity: 0, scale: 0.95, x: 30 }} animate={{ opacity: 1, scale: 1, x: 0 }} transition={{ duration: 1 }}>
+            <motion.div
+              className="xl:w-1/2 relative w-full flex justify-center xl:justify-end"
+              initial={{ opacity: 0, scale: 0.95, x: 30 }}
+              animate={{ opacity: 1, scale: 1, x: 0 }}
+              transition={{ duration: 1 }}
+            >
               <div className="relative z-10 w-full max-w-sm sm:max-w-md xl:max-w-xl h-auto rounded-[3rem] border border-foreground/10 shadow-2xl group overflow-hidden bg-foreground/[0.02]">
                 <Image
                   src="/Nortech Games.png"
@@ -542,19 +824,30 @@ export default function NortechGames() {
               </div>
 
               {/* Enhanced Gaming Hub Badge */}
-              <motion.div 
-                animate={{ boxShadow: ["0 0 20px rgba(168,85,247,0.1)", "0 0 40px rgba(168,85,247,0.3)", "0 0 20px rgba(168,85,247,0.1)"] }}
+              <motion.div
+                animate={{
+                  boxShadow: [
+                    "0 0 20px rgba(168,85,247,0.1)",
+                    "0 0 40px rgba(168,85,247,0.3)",
+                    "0 0 20px rgba(168,85,247,0.1)",
+                  ],
+                }}
                 transition={{ repeat: Infinity, duration: 4 }}
-                className="absolute -bottom-6 left-1/2 -translate-x-1/2 w-[90%] sm:w-auto min-w-[280px] p-5 sm:p-6 bg-black/60 backdrop-blur-2xl border border-purple-500/40 rounded-[2rem] z-20">
+                className="absolute -bottom-6 left-1/2 -translate-x-1/2 w-[90%] sm:w-auto min-w-[280px] p-5 sm:p-6 bg-black/60 backdrop-blur-2xl border border-purple-500/40 rounded-[2rem] z-20"
+              >
                 <div className="flex items-center gap-5 justify-center sm:justify-start">
                   <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-cyan-500 rounded-xl flex items-center justify-center shadow-[0_0_15px_rgba(168,85,247,0.5)]">
                     <Gamepad2 className="text-white w-6 h-6" />
                   </div>
                   <div>
-                    <h4 className="text-white font-black text-xl leading-none uppercase italic tracking-tighter">Gaming Hub</h4>
+                    <h4 className="text-white font-black text-xl leading-none uppercase italic tracking-tighter">
+                      Gaming Hub
+                    </h4>
                     <div className="flex items-center gap-2 mt-1.5">
                       <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                      <p className="text-purple-400 text-[10px] uppercase font-black tracking-widest leading-none">Play to Innovate</p>
+                      <p className="text-purple-400 text-[10px] uppercase font-black tracking-widest leading-none">
+                        Play to Innovate
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -569,8 +862,15 @@ export default function NortechGames() {
       {/* ── GAME LOBBY ─────────────────────────────────────────────── */}
       <section id="play-section" className="py-24 px-6 border-b border-foreground/5">
         <div className="max-w-7xl mx-auto">
-          <motion.div className="text-center mb-16" initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
-            <span className="inline-block mb-4 text-purple-400 font-black bg-purple-500/10 px-6 py-2 rounded-full text-[10px] uppercase tracking-[0.4em] border border-purple-500/20">Lobby</span>
+          <motion.div
+            className="text-center mb-16"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+          >
+            <span className="inline-block mb-4 text-purple-400 font-black bg-purple-500/10 px-6 py-2 rounded-full text-[10px] uppercase tracking-[0.4em] border border-purple-500/20">
+              Lobby
+            </span>
             <h2 className="text-4xl md:text-6xl font-black text-foreground uppercase leading-none tracking-tighter">
               <span className="block">Escolha seu</span>
               <span
@@ -587,13 +887,26 @@ export default function NortechGames() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
             {GAMES_LIST.map((game, i) => (
-              <motion.div key={game.id} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
-                transition={{ delay: i * 0.08 }} whileHover={!game.locked ? { y: -8, scale: 1.02 } : {}}
+              <motion.div
+                key={game.id}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.08 }}
+                whileHover={!game.locked ? { y: -8, scale: 1.02 } : {}}
                 className={`relative p-6 sm:p-8 rounded-[2.5rem] border backdrop-blur-sm transition-all duration-500
-                  ${game.locked ? "opacity-60 cursor-not-allowed grayscale" : "cursor-pointer hover:border-purple-500/40 hover:shadow-[0_20px_50px_rgba(168,85,247,0.1)]"}
-                  ${activeGame === game.id ? "border-purple-500/50 bg-purple-500/5 ring-4 ring-purple-500/10" : "bg-foreground/[0.02] border-foreground/8"}`}
-                onClick={() => !game.locked && setActiveGame(activeGame === game.id ? null : game.id)}>
-
+                  ${
+                    game.locked
+                      ? "opacity-60 cursor-not-allowed grayscale"
+                      : "cursor-pointer hover:border-purple-500/40 hover:shadow-[0_20px_50px_rgba(168,85,247,0.1)]"
+                  }
+                  ${
+                    activeGame === game.id
+                      ? "border-purple-500/50 bg-purple-500/5 ring-4 ring-purple-500/10"
+                      : "bg-foreground/[0.02] border-foreground/8"
+                  }`}
+                onClick={() => !game.locked && setActiveGame(activeGame === game.id ? null : game.id)}
+              >
                 {game.locked && (
                   <div className="absolute top-4 right-4">
                     <Lock className="w-4 h-4 text-foreground/30" />
@@ -606,13 +919,21 @@ export default function NortechGames() {
 
                 <div className="flex items-start justify-between mb-3">
                   <h3 className="text-lg font-black text-foreground uppercase italic tracking-tight">{game.title.slice(2)}</h3>
-                  <span className={`text-[8px] font-black uppercase tracking-widest px-2 py-1 rounded-full border ${colorMap[game.color]}`}>{game.category}</span>
+                  <span className={`text-[8px] font-black uppercase tracking-widest px-2 py-1 rounded-full border ${colorMap[game.color]}`}>
+                    {game.category}
+                  </span>
                 </div>
                 <p className="text-foreground/50 text-sm font-bold mb-6">{game.desc}</p>
 
                 {!game.locked && (
-                  <button className={`w-full py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all
-                    ${activeGame === game.id ? "bg-purple-500 text-white" : "bg-foreground/5 text-foreground/60 hover:bg-foreground/10"}`}>
+                  <button
+                    className={`w-full py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all
+                      ${
+                        activeGame === game.id
+                          ? "bg-purple-500 text-white"
+                          : "bg-foreground/5 text-foreground/60 hover:bg-foreground/10"
+                      }`}
+                  >
                     {activeGame === game.id ? "▼ Fechar Jogo" : "▶ Jogar Agora"}
                   </button>
                 )}
@@ -628,24 +949,30 @@ export default function NortechGames() {
           {/* ── Embedded Game ── */}
           <AnimatePresence>
             {activeGame && GameComponent && (
-              <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }}
-                className="overflow-hidden">
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                className="overflow-hidden"
+              >
                 <div className="bg-foreground/[0.02] border border-purple-500/20 rounded-[3rem] p-6 md:p-12 flex flex-col items-center">
                   <div className="flex flex-col sm:flex-row items-center justify-between w-full max-w-2xl mb-10 gap-4">
                     <div className="text-center sm:text-left">
                       <h3 className="text-2xl md:text-3xl font-black text-foreground uppercase italic tracking-tighter">
-                        {GAMES_LIST.find(g => g.id === activeGame)?.title}
+                        {GAMES_LIST.find((g) => g.id === activeGame)?.title}
                       </h3>
-                      <p className="text-[10px] font-black text-purple-400 uppercase tracking-widest mt-1">Sessão Ativa • Divirta-se!</p>
+                      <p className="text-[10px] font-black text-purple-400 uppercase tracking-widest mt-1">
+                        Sessão Ativa • Divirta-se!
+                      </p>
                     </div>
-                    <button onClick={() => setActiveGame(null)}
-                      className="text-foreground/50 hover:text-foreground transition-all text-xs font-black uppercase tracking-widest border border-foreground/10 px-6 py-3 rounded-full hover:border-foreground/30 hover:bg-foreground/5 group">
+                    <button
+                      onClick={() => setActiveGame(null)}
+                      className="text-foreground/50 hover:text-foreground transition-all text-xs font-black uppercase tracking-widest border border-foreground/10 px-6 py-3 rounded-full hover:border-foreground/30 hover:bg-foreground/5 group"
+                    >
                       Fechar Jogo <span className="ml-2 group-hover:rotate-90 inline-block transition-transform">✕</span>
                     </button>
                   </div>
-                  <div className="w-full flex justify-center">
-                    {GameComponent}
-                  </div>
+                  <div className="w-full flex justify-center">{GameComponent}</div>
                 </div>
               </motion.div>
             )}
@@ -656,8 +983,15 @@ export default function NortechGames() {
       {/* ── ACHIEVEMENTS ───────────────────────────────────────────── */}
       <section className="py-24 px-6 border-b border-foreground/5 bg-foreground/[0.01]">
         <div className="max-w-7xl mx-auto">
-          <motion.div className="text-center mb-16" initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
-            <span className="inline-block mb-4 text-yellow-400 font-black bg-yellow-500/10 px-6 py-2 rounded-full text-[10px] uppercase tracking-[0.4em] border border-yellow-500/20">Trofeus</span>
+          <motion.div
+            className="text-center mb-16"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+          >
+            <span className="inline-block mb-4 text-yellow-400 font-black bg-yellow-500/10 px-6 py-2 rounded-full text-[10px] uppercase tracking-[0.4em] border border-yellow-500/20">
+              Troféus
+            </span>
             <h2 className="text-4xl md:text-6xl font-black text-foreground uppercase leading-none tracking-tighter">
               <span className="block">Suas</span>
               <span
@@ -670,19 +1004,32 @@ export default function NortechGames() {
                 Conquistas
               </span>
             </h2>
-            <p className="text-foreground/40 text-xs font-black uppercase tracking-widest mt-3">{gs.achievements.size}/{ACHIEVEMENT_LIST.length} desbloqueadas</p>
+            <p className="text-foreground/40 text-xs font-black uppercase tracking-widest mt-3">
+              {gs.achievements.size}/{ACHIEVEMENT_LIST.length} desbloqueadas
+            </p>
           </motion.div>
 
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
             {ACHIEVEMENT_LIST.map((ach, i) => {
               const unlocked = gs.achievements.has(ach.id);
               return (
-                <motion.div key={ach.id} initial={{ opacity: 0, scale: 0.8 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }}
+                <motion.div
+                  key={ach.id}
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  whileInView={{ opacity: 1, scale: 1 }}
+                  viewport={{ once: true }}
                   transition={{ delay: i * 0.06 }}
                   className={`p-5 rounded-[2rem] border text-center transition-all flex flex-col items-center gap-2
-                    ${unlocked ? "bg-yellow-500/10 border-yellow-500/30 shadow-[0_0_20px_rgba(234,179,8,0.1)]" : "bg-foreground/[0.02] border-foreground/8 opacity-50"}`}>
+                    ${
+                      unlocked
+                        ? "bg-yellow-500/10 border-yellow-500/30 shadow-[0_0_20px_rgba(234,179,8,0.1)]"
+                        : "bg-foreground/[0.02] border-foreground/8 opacity-50"
+                    }`}
+                >
                   <span className={`text-3xl ${unlocked ? "" : "grayscale"}`}>{ach.icon}</span>
-                  <p className={`text-[9px] font-black uppercase tracking-tight ${unlocked ? "text-yellow-400" : "text-foreground/40"}`}>{ach.title}</p>
+                  <p className={`text-[9px] font-black uppercase tracking-tight ${unlocked ? "text-yellow-400" : "text-foreground/40"}`}>
+                    {ach.title}
+                  </p>
                   {unlocked && <span className="text-[8px] text-yellow-600 font-black">+{ach.xp} XP</span>}
                   {!unlocked && <p className="text-[8px] text-foreground/30 font-bold">{ach.desc}</p>}
                 </motion.div>
@@ -695,8 +1042,15 @@ export default function NortechGames() {
       {/* ── DEV SECTION ────────────────────────────────────────────── */}
       <section id="dev-section" className="py-24 px-6 border-b border-foreground/5">
         <div className="max-w-7xl mx-auto">
-          <motion.div className="text-center mb-16" initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
-            <span className="inline-block mb-4 text-cyan-400 font-black bg-cyan-500/10 px-6 py-2 rounded-full text-[10px] uppercase tracking-[0.4em] border border-cyan-500/20">Desenvolva</span>
+          <motion.div
+            className="text-center mb-16"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+          >
+            <span className="inline-block mb-4 text-cyan-400 font-black bg-cyan-500/10 px-6 py-2 rounded-full text-[10px] uppercase tracking-[0.4em] border border-cyan-500/20">
+              Desenvolva
+            </span>
             <h2 className="text-4xl md:text-6xl font-black text-foreground uppercase leading-none tracking-tighter">
               <span className="block">Crie seu</span>
               <span
@@ -716,10 +1070,18 @@ export default function NortechGames() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
             {devTools.map((t, i) => (
-              <motion.div key={i} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
-                transition={{ delay: i * 0.08 }} whileHover={{ y: -4 }}
-                className="p-7 rounded-[2rem] bg-foreground/[0.02] border border-foreground/8 hover:border-cyan-500/20 transition-all group">
-                <div className={`w-12 h-12 rounded-2xl flex items-center justify-center mb-5 border ${colorMap[t.color]} group-hover:scale-110 transition-transform`}>
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.08 }}
+                whileHover={{ y: -4 }}
+                className="p-7 rounded-[2rem] bg-foreground/[0.02] border border-foreground/8 hover:border-cyan-500/20 transition-all group"
+              >
+                <div
+                  className={`w-12 h-12 rounded-2xl flex items-center justify-center mb-5 border ${colorMap[t.color]} group-hover:scale-110 transition-transform`}
+                >
                   {t.icon}
                 </div>
                 <h3 className="text-foreground font-black text-lg uppercase italic tracking-tight mb-2">{t.name}</h3>
@@ -729,10 +1091,16 @@ export default function NortechGames() {
           </div>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/nortech-lab" className="inline-flex items-center gap-3 bg-cyan-500 hover:bg-cyan-400 text-black font-black px-10 py-4 rounded-full transition-all uppercase text-[10px] tracking-[0.3em]">
+            <Link
+              href="/nortech-lab"
+              className="inline-flex items-center gap-3 bg-cyan-500 hover:bg-cyan-400 text-black font-black px-10 py-4 rounded-full transition-all uppercase text-[10px] tracking-[0.3em]"
+            >
               <Beaker className="w-4 h-4" /> Ir para Nortech Lab
             </Link>
-            <Link href="/contatos" className="inline-flex items-center gap-3 border border-foreground/10 hover:border-cyan-500/30 text-foreground font-black px-10 py-4 rounded-full transition-all uppercase text-[10px] tracking-[0.3em]">
+            <Link
+              href="/contatos"
+              className="inline-flex items-center gap-3 border border-foreground/10 hover:border-cyan-500/30 text-foreground font-black px-10 py-4 rounded-full transition-all uppercase text-[10px] tracking-[0.3em]"
+            >
               <Sparkles className="w-4 h-4" /> Propor um Jogo
             </Link>
           </div>
@@ -742,8 +1110,15 @@ export default function NortechGames() {
       {/* ── COMMUNITY ──────────────────────────────────────────────── */}
       <section className="py-24 px-6 border-b border-foreground/5 bg-foreground/[0.01]">
         <div className="max-w-7xl mx-auto">
-          <motion.div className="text-center mb-16" initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
-            <span className="inline-block mb-4 text-emerald-400 font-black bg-emerald-500/10 px-6 py-2 rounded-full text-[10px] uppercase tracking-[0.4em] border border-emerald-500/20">Comunidade</span>
+          <motion.div
+            className="text-center mb-16"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+          >
+            <span className="inline-block mb-4 text-emerald-400 font-black bg-emerald-500/10 px-6 py-2 rounded-full text-[10px] uppercase tracking-[0.4em] border border-emerald-500/20">
+              Comunidade
+            </span>
             <h2 className="text-4xl md:text-6xl font-black text-foreground uppercase leading-none tracking-tighter">
               <span className="block">Leaderboard</span>
               <span
@@ -760,30 +1135,41 @@ export default function NortechGames() {
 
           <div className="max-w-2xl mx-auto">
             {[
-              { rank: 1, name: "TechGamer_BR",  xp: 4850, badge: "👑" },
-              { rank: 2, name: "CodeNinja",     xp: 3210, badge: "🥈" },
-              { rank: 3, name: "PixelMaster",   xp: 2740, badge: "🥉" },
-              { rank: 4, name: "ByteStorm",     xp: 1980, badge: "🎮" },
-              { rank: 5, name: "Você",          xp: gs.xp,badge: "⚡", highlight: true },
-            ].sort((a, b) => b.xp - a.xp).map((player, i) => (
-              <motion.div key={player.name} initial={{ opacity: 0, x: -20 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }}
-                transition={{ delay: i * 0.08 }}
-                className={`flex items-center gap-5 p-5 rounded-2xl mb-3 border transition-all
-                  ${player.highlight ? "bg-purple-500/10 border-purple-500/20" : "bg-foreground/[0.02] border-foreground/8"}`}>
-                <span className="text-2xl w-8 text-center">{player.badge}</span>
-                <div className="flex-1">
-                  <p className={`font-black text-sm uppercase tracking-tight ${player.highlight ? "text-purple-400" : "text-foreground"}`}>{player.name}</p>
-                  <div className="flex items-center gap-2 mt-1">
-                    <div className="flex-1 h-1.5 bg-foreground/10 rounded-full overflow-hidden">
-                      <div className={`h-full rounded-full ${player.highlight ? "bg-purple-500" : "bg-foreground/30"}`}
-                        style={{ width: `${Math.min(100, (player.xp / 5000) * 100)}%` }} />
+              { rank: 1, name: "TechGamer_BR", xp: 4850, badge: "👑" },
+              { rank: 2, name: "CodeNinja", xp: 3210, badge: "🥈" },
+              { rank: 3, name: "PixelMaster", xp: 2740, badge: "🥉" },
+              { rank: 4, name: "ByteStorm", xp: 1980, badge: "🎮" },
+              { rank: 5, name: "Você", xp: gs.xp, badge: "⚡", highlight: true },
+            ]
+              .sort((a, b) => b.xp - a.xp)
+              .map((player, i) => (
+                <motion.div
+                  key={player.name}
+                  initial={{ opacity: 0, x: -20 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: i * 0.08 }}
+                  className={`flex items-center gap-5 p-5 rounded-2xl mb-3 border transition-all
+                    ${player.highlight ? "bg-purple-500/10 border-purple-500/20" : "bg-foreground/[0.02] border-foreground/8"}`}
+                >
+                  <span className="text-2xl w-8 text-center">{player.badge}</span>
+                  <div className="flex-1">
+                    <p className={`font-black text-sm uppercase tracking-tight ${player.highlight ? "text-purple-400" : "text-foreground"}`}>
+                      {player.name}
+                    </p>
+                    <div className="flex items-center gap-2 mt-1">
+                      <div className="flex-1 h-1.5 bg-foreground/10 rounded-full overflow-hidden">
+                        <div
+                          className={`h-full rounded-full ${player.highlight ? "bg-purple-500" : "bg-foreground/30"}`}
+                          style={{ width: `${Math.min(100, (player.xp / 5000) * 100)}%` }}
+                        />
+                      </div>
+                      <span className="text-[9px] font-black text-foreground/40 uppercase">{player.xp} XP</span>
                     </div>
-                    <span className="text-[9px] font-black text-foreground/40 uppercase">{player.xp} XP</span>
                   </div>
-                </div>
-                <span className="text-foreground/30 text-[9px] font-black uppercase">#{i + 1}</span>
-              </motion.div>
-            ))}
+                  <span className="text-foreground/30 text-[9px] font-black uppercase">#{i + 1}</span>
+                </motion.div>
+              ))}
           </div>
         </div>
       </section>
@@ -791,8 +1177,15 @@ export default function NortechGames() {
       {/* ── ECOSYSTEM ──────────────────────────────────────────────── */}
       <section className="py-24 px-6 border-b border-foreground/5">
         <div className="max-w-7xl mx-auto">
-          <motion.div className="text-center mb-16" initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
-            <span className="inline-block mb-4 text-purple-400 font-black bg-purple-500/10 px-6 py-2 rounded-full text-[10px] uppercase tracking-[0.4em] border border-purple-500/20">Integração</span>
+          <motion.div
+            className="text-center mb-16"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+          >
+            <span className="inline-block mb-4 text-purple-400 font-black bg-purple-500/10 px-6 py-2 rounded-full text-[10px] uppercase tracking-[0.4em] border border-purple-500/20">
+              Integração
+            </span>
             <h2 className="text-4xl md:text-6xl font-black text-foreground uppercase leading-none tracking-tighter">
               <span className="block">Parte do</span>
               <span
@@ -809,13 +1202,46 @@ export default function NortechGames() {
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
             {[
-              { name: "Nortech Lab", icon: <Beaker className="w-6 h-6" />, desc: "Protótipos e testes de jogos", color: "cyan", href: "/nortech-lab" },
-              { name: "Nortech Inovação", icon: <Zap className="w-6 h-6" />, desc: "Dev de jogos com IA", color: "yellow", href: "/" },
-              { name: "Nortech Network", icon: <Network className="w-6 h-6" />, desc: "Infraestrutura online", color: "blue", href: "/nortech-network" },
-              { name: "Nortech Security", icon: <Shield className="w-6 h-6" />, desc: "Proteção de dados", color: "emerald", href: "/nortech-security" },
+              {
+                name: "Nortech Lab",
+                icon: <Beaker className="w-6 h-6" />,
+                desc: "Protótipos e testes",
+                color: "cyan",
+                href: "/nortech-lab",
+              },
+              {
+                name: "Nortech Inovação",
+                icon: <Target className="w-6 h-6" />,
+                desc: "Desenvolvimento com foco",
+                color: "yellow",
+                href: "/",
+              },
+              {
+                name: "Nortech Network",
+                icon: <Users className="w-6 h-6" />,
+                desc: "Colaboração e parcerias",
+                color: "blue",
+                href: "/nortech-network",
+              },
+              {
+                name: "Nortech Security",
+                icon: <Shield className="w-6 h-6" />,
+                desc: "Proteção de dados",
+                color: "emerald",
+                href: "/nortech-security",
+              },
             ].map((item, i) => (
-              <motion.div key={i} initial={{ opacity: 0, scale: 0.9 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} transition={{ delay: i * 0.1 }}>
-                <Link href={item.href} className={`flex flex-col items-center p-7 rounded-[2rem] border ${colorMap[item.color]} text-center group hover:scale-105 transition-all`}>
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, scale: 0.9 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.1 }}
+              >
+                <Link
+                  href={item.href}
+                  className={`flex flex-col items-center p-7 rounded-[2rem] border ${colorMap[item.color]} text-center group hover:scale-105 transition-all`}
+                >
                   <div className="mb-4 group-hover:scale-110 transition-transform">{item.icon}</div>
                   <p className="font-black text-foreground text-sm uppercase italic tracking-tight mb-2">{item.name}</p>
                   <p className="text-foreground/40 text-[9px] font-bold uppercase tracking-tight">{item.desc}</p>
@@ -830,8 +1256,12 @@ export default function NortechGames() {
       {/* ── CTA FINAL ─────────────────────────────────────────────── */}
       <section className="py-24 px-6">
         <div className="max-w-4xl mx-auto">
-          <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
-            className="relative rounded-[3.5rem] overflow-hidden border border-purple-500/20 bg-linear-to-br from-purple-950/40 via-background to-cyan-950/20 p-12 md:p-20 text-center">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="relative rounded-[3.5rem] overflow-hidden border border-purple-500/20 bg-linear-to-br from-purple-950/40 via-background to-cyan-950/20 p-12 md:p-20 text-center"
+          >
             <div className="absolute top-0 left-1/2 -translate-x-1/2 h-px w-full bg-linear-to-r from-transparent via-purple-500 to-transparent" />
             <div className="absolute -top-20 left-1/2 -translate-x-1/2 w-64 h-64 bg-purple-500/10 blur-[80px]" />
             <span className="text-6xl block mb-6 relative z-10">🎮</span>
@@ -851,12 +1281,16 @@ export default function NortechGames() {
               Jogue, crie, colecione conquistas e suba no ranking da Nortech Games.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center relative z-10">
-              <button onClick={() => document.getElementById("play-section")?.scrollIntoView({ behavior: "smooth" })}
-                className="inline-flex items-center gap-3 bg-purple-500 hover:bg-purple-400 text-white font-black px-10 py-4 rounded-full transition-all shadow-[0_10px_30px_rgba(168,85,247,0.3)] uppercase text-[10px] tracking-[0.3em]">
+              <button
+                onClick={() => document.getElementById("play-section")?.scrollIntoView({ behavior: "smooth" })}
+                className="inline-flex items-center gap-3 bg-purple-500 hover:bg-purple-400 text-white font-black px-10 py-4 rounded-full transition-all shadow-[0_10px_30px_rgba(168,85,247,0.3)] uppercase text-[10px] tracking-[0.3em]"
+              >
                 <Play className="w-4 h-4 fill-current" /> Jogar Agora
               </button>
-              <Link href="/contatos"
-                className="inline-flex items-center gap-3 border border-foreground/10 hover:border-purple-500/30 text-foreground font-black px-10 py-4 rounded-full transition-all uppercase text-[10px] tracking-[0.3em]">
+              <Link
+                href="/contatos"
+                className="inline-flex items-center gap-3 border border-foreground/10 hover:border-purple-500/30 text-foreground font-black px-10 py-4 rounded-full transition-all uppercase text-[10px] tracking-[0.3em]"
+              >
                 <Rocket className="w-4 h-4" /> Propor um Jogo
                 <ArrowRight className="w-3 h-3" />
               </Link>

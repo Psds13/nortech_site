@@ -2,102 +2,141 @@
 
 import { motion } from "framer-motion";
 import Image from "next/image";
-import { FiCode, FiTrendingUp } from "react-icons/fi";
+import Link from "next/link";
+import { Network, ShieldCheck, Layers, Award, ArrowRight } from "lucide-react";
 
 export default function About() {
   return (
-    <section className="py-20 md:py-24 px-6 bg-background">
-      <div className="max-w-6xl mx-auto">
+    <section className="py-20 md:py-24 px-4 sm:px-6 bg-background">
+      <div className="max-w-[1280px] mx-auto space-y-16">
+        
+        {/* Section Header */}
         <motion.div
-          className="mb-12 md:mb-16"
+          className="text-center max-w-3xl mx-auto space-y-4"
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
         >
-          <p className="text-xs font-medium uppercase tracking-wide text-cyan-600 dark:text-cyan-400 mb-3">
-            Sobre nós
-          </p>
-          <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4 tracking-tight">
-            Software com foco em resultado
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan/10 text-cyan border border-cyan/20 text-xs font-bold uppercase tracking-wider">
+            <Award className="w-3.5 h-3.5" />
+            <span>Engenharia & Governança de Tecnologia</span>
+          </div>
+
+          <h2 className="text-3xl md:text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+            Plataforma Corporativa Estruturada por <span className="text-cyan">Domínio de Negócio</span>
           </h2>
-          <p className="text-foreground/60 max-w-2xl leading-relaxed">
-            Somos uma software house de São Luís. Desenvolvemos sistemas junto com
-            nossos clientes, com atenção aos detalhes e entregas em ciclos curtos.
+
+          <p className="text-sm md:text-base text-slate-600 dark:text-slate-300 leading-relaxed">
+            Sediada em São Luís (MA) e com suporte em todo o território nacional, a Nortech Inovação desenvolve ecossistemas desacoplados, garantindo alta especialização técnica, suporte presencial/remoto e SLA contratual.
           </p>
         </motion.div>
 
-        <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-16">
+        {/* Content Layout */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+          
+          {/* Image Column */}
           <motion.div
-            className="w-full lg:w-1/2 relative"
+            className="lg:col-span-5 relative"
             initial={{ opacity: 0, x: -20 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
           >
-            <div className="relative w-full h-[280px] sm:h-[360px] lg:h-[400px] overflow-hidden rounded-xl border border-foreground/10">
+            <div className="relative w-full h-[320px] sm:h-[400px] overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xl">
               <Image
-                src="/Nortech Inovação.jpg"
-                alt="Equipe Nortech Inovação"
+                src="/Nortech Inovação.png"
+                alt="Nortech Inovação Operações"
                 fill
-                className="object-cover object-center"
-                sizes="(max-width: 1024px) 100vw, 50vw"
+                className="object-contain p-8 bg-slate-900"
+                sizes="(max-width: 1024px) 100vw, 40vw"
               />
+            </div>
+            
+            {/* Overlay Status Badge */}
+            <div className="absolute -bottom-4 -right-2 sm:right-4 bg-card-bg border border-slate-200 dark:border-slate-800 p-4 rounded-xl shadow-xl flex items-center gap-3">
+              <div className="p-2.5 rounded-lg bg-cyan/10 text-cyan">
+                <Network className="w-5 h-5" />
+              </div>
+              <div>
+                <p className="text-xs font-bold text-slate-900 dark:text-white">Nortech Network</p>
+                <p className="text-[11px] text-slate-500 font-semibold">Suporte NOC & Redes 24/7</p>
+              </div>
             </div>
           </motion.div>
 
+          {/* Text & Features Column */}
           <motion.div
-            className="lg:w-1/2 space-y-8"
+            className="lg:col-span-7 space-y-6"
             initial={{ opacity: 0, x: 20 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
           >
-            <p className="text-foreground/70 leading-relaxed">
-              Cada projeto é pensado para funcionar bem e resolver o problema do
-              cliente. Trabalhamos com metodologias ágeis, código documentado e
-              comunicação clara em todas as etapas.
-            </p>
-
-            <div className="space-y-5">
-              {[
-                {
-                  icon: FiCode,
-                  title: "Código limpo",
-                  desc: "Boas práticas e padrões da indústria em cada entrega.",
-                },
-                {
-                  icon: FiTrendingUp,
-                  title: "Escalabilidade",
-                  desc: "Sistemas projetados para crescer junto com o negócio.",
-                },
-              ].map((item, i) => (
-                <div key={i} className="flex gap-4 items-start">
-                  <div className="w-10 h-10 rounded-lg bg-foreground/5 border border-foreground/10 flex items-center justify-center text-cyan-600 dark:text-cyan-400 shrink-0">
-                    <item.icon size={18} />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-foreground mb-1">{item.title}</h3>
-                    <p className="text-foreground/50 text-sm leading-relaxed">{item.desc}</p>
-                  </div>
-                </div>
-              ))}
+            <div className="space-y-4">
+              <h3 className="text-xl font-bold text-slate-900 dark:text-white">
+                Ciclo Completo: Da Arquitetura de Redes ao Software SaaS
+              </h3>
+              <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+                Nossa arquitetura é dividida em módulos independentes. Isso permite adicionar novos ecossistemas (como IA, Cyber Security ou Automação Industrial) sem impacto na infraestrutura existente.
+              </p>
             </div>
 
-            <div className="pt-6 border-t border-foreground/10">
-              <p className="text-xs font-medium text-foreground/50 uppercase tracking-wide mb-3">
-                Stack principal
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="bg-card-bg/80 border border-slate-200 dark:border-slate-800 p-4 rounded-xl space-y-1">
+                <div className="flex items-center gap-2 text-cyan font-bold text-xs uppercase tracking-wider">
+                  <ShieldCheck className="w-4 h-4" />
+                  <span>Segurança & Conformidade</span>
+                </div>
+                <p className="text-xs text-slate-500">Auditoria LGPD, testes de invasão e conformidade com WCAG 2.2 AAA.</p>
+              </div>
+
+              <div className="bg-card-bg/80 border border-slate-200 dark:border-slate-800 p-4 rounded-xl space-y-1">
+                <div className="flex items-center gap-2 text-cyan font-bold text-xs uppercase tracking-wider">
+                  <Layers className="w-4 h-4" />
+                  <span>17 Ecossistemas</span>
+                </div>
+                <p className="text-xs text-slate-500">Unidades de negócio especializadas com equipes dedicadas.</p>
+              </div>
+            </div>
+
+            {/* Technical Stack Pills */}
+            <div className="pt-4 border-t border-slate-200 dark:border-slate-800 space-y-2">
+              <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                Stack Técnica & Infraestrutura Corporativa:
               </p>
               <div className="flex flex-wrap gap-2">
-                {["Next.js", "React", "Node.js", "PostgreSQL", "AWS"].map((tech) => (
+                {[
+                  "Cabeamento Cat6A / Fibra",
+                  "Fluke Certified",
+                  "Next.js 15",
+                  "TypeScript",
+                  "Fortinet / Cisco",
+                  "VMware / Proxmox",
+                  "Python / RAG AI",
+                  "PostgreSQL",
+                  "AWS & Azure"
+                ].map((tech) => (
                   <span
                     key={tech}
-                    className="px-3 py-1.5 bg-foreground/5 text-foreground/70 border border-foreground/10 rounded-md text-xs font-medium"
+                    className="px-3 py-1 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700/60 rounded-lg text-xs font-semibold"
                   >
                     {tech}
                   </span>
                 ))}
               </div>
             </div>
+
+            <div className="pt-2">
+              <Link
+                href="/sobre"
+                className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-cyan hover:underline"
+              >
+                <span>Conhecer Metodologia de Governança</span>
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+            </div>
+
           </motion.div>
         </div>
+
       </div>
     </section>
   );

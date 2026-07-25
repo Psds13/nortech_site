@@ -8,6 +8,8 @@ declare global {
     VLibras?: {
       Widget: new (url: string) => { init: () => void; };
     };
+    // Sentry SDK attaches this property at runtime
+    __SENTRY__?: unknown;
   }
 }
 
@@ -20,8 +22,9 @@ const Libras = () => {
       if (wrapper && !hasIframe) {
         try {
           new window.VLibras.Widget('https://vlibras.gov.br/app');
-        } catch (e) {
+        } catch (error) {
           // VLibras initialization errors are tracked via Sentry
+          console.error('VLibras init failed', error);
           if (typeof window !== 'undefined' && window.__SENTRY__) {
             // Sentry reporting would go here
           }

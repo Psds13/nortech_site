@@ -1,4 +1,5 @@
 "use client";
+
 import { NextPage } from 'next';
 import NextImage from 'next/image';
 import Head from 'next/head';
@@ -7,7 +8,6 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { PostgrestSingleResponse } from '@supabase/supabase-js';
 import { FiCheckCircle } from 'react-icons/fi';
 
-import jsPDF from 'jspdf';
 import SquareReveal from '../components/SquareReveal';
 import { supabase } from '@/lib/supabase';
 import { useForm, useWatch } from 'react-hook-form';
@@ -154,7 +154,6 @@ const PaymentContent = () => {
     setValorComDesconto(resultado.valorComDesconto);
   };
 
-
   const getPixCode = () => {
     const valor = descontoAplicado ? valorComDesconto : valorOriginal;
     return `00020126360014BR.GOV.BCB.PIX0114+5548999999999520400005303986540${valor.toFixed(2).length.toString().padStart(2, '0')}${valor.toFixed(2)}5802BR5925Nortech INOVACAO6007BRASILIA62070503***6304`;
@@ -178,7 +177,6 @@ const PaymentContent = () => {
     try {
       const client = supabase;
       if (!client) {
-        // Supabase configuration check - handled in production
         return;
       }
 
@@ -232,21 +230,29 @@ const PaymentContent = () => {
     }, 3000);
   };
 
-  const handleDownloadPdf = async () => {
-    const pdf = new jsPDF();
-    pdf.setFillColor(0, 0, 0);
-    pdf.rect(0, 0, 210, 40, 'F');
-    pdf.setTextColor(255, 255, 255);
-    pdf.setFontSize(22);
-    pdf.text('Nortech INOVAÇÃO', 50, 20);
-    pdf.setFontSize(14);
-    pdf.text('DETALHES DO PEDIDO', 20, 60);
-    pdf.setTextColor(0, 0, 0);
-    pdf.text(`Plano: ${planName}`, 20, 75);
-    pdf.text(`Valor: ${formatCurrency(descontoAplicado ? valorComDesconto : valorOriginal)}`, 20, 85);
-    pdf.text(`Código de Barras: ${boletoCode}`, 20, 100);
-    pdf.save('boleto-nortech.pdf');
-  };
+  // Função otimizada para download de PDF
+  const handleDownloadPdf = useCallback(async () => {
+    try {
+      // Importação dinâmica para evitar carregamento desnecessário
+      const { default: jsPDF } = await import('jspdf');
+      
+      const pdf = new jsPDF();
+      pdf.setFillColor(0, 0, 0);
+      pdf.rect(0, 0, 210, 40, 'F');
+      pdf.setTextColor(255, 255, 255);
+      pdf.setFontSize(22);
+      pdf.text('Nortech INOVAÇÃO', 50, 20);
+      pdf.setFontSize(14);
+      pdf.text('DETALHES DO PEDIDO', 20, 60);
+      pdf.setTextColor(0, 0, 0);
+      pdf.text(`Plano: ${planName}`, 20, 75);
+      pdf.text(`Valor: ${formatCurrency(descontoAplicado ? valorComDesconto : valorOriginal)}`, 20, 85);
+      pdf.text(`Código de Barras: ${boletoCode}`, 20, 100);
+      pdf.save('boleto-nortech.pdf');
+    } catch (error) {
+      console.error('Erro ao gerar PDF:', error);
+    }
+  }, [planName, descontoAplicado, valorComDesconto, valorOriginal, boletoCode]);
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
@@ -309,6 +315,13 @@ const PaymentContent = () => {
                             <div className="bg-black/40 p-4 rounded border border-white/10 font-mono text-xs text-gray-300 break-all">
                               {boletoCode}
                             </div>
+                            <Button 
+                              type="button" 
+                              onClick={handleDownloadPdf} 
+                              className="w-full mt-4 bg-cyan-500 text-black hover:bg-cyan-400 transition-all"
+                            >
+                              📄 Baixar Boleto PDF
+                            </Button>
                           </div>
                         </TabsContent>
 

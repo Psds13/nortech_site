@@ -1,22 +1,35 @@
 @import "tailwindcss";
 
 @custom-variant dark (&:where(.dark, .dark *));
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-  --cyan: #0099cc;
+  --background: #f8fafc;
+  --foreground: #0f172a;
+  --card-bg: #ffffff;
+  --card-border: rgba(226, 232, 240, 0.8);
+  --cyan: #0077a3;
+  --cyan-accent: #0099cc;
+  --navy-dark: #0f172a;
+  --slate-muted: #64748b;
 }
 
 .dark {
-  --background: #0a0a0a;
-  --foreground: #ededed;
-  --cyan: #00DBFF;
+  --background: #080d1a;
+  --foreground: #f1f5f9;
+  --card-bg: #0f172a;
+  --card-border: rgba(30, 41, 59, 0.8);
+  --cyan: #00dbff;
+  --cyan-accent: #38bdf8;
+  --navy-dark: #030712;
+  --slate-muted: #94a3b8;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-cyan: var(--cyan);
+  --color-card-bg: var(--card-bg);
+  --color-card-border: var(--card-border);
   --font-sans: var(--font-outfit);
   --font-mono: var(--font-geist-mono);
 }
@@ -28,10 +41,33 @@ html {
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-sans), system-ui, sans-serif;
+  font-family: var(--font-sans), system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
   overflow-x: hidden;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
+}
+
+/* Custom Corporate Glassmorphism */
+.glass-panel {
+  background: rgba(15, 23, 42, 0.75);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.light .glass-panel {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(226, 232, 240, 0.8);
+}
+
+.enterprise-card {
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.enterprise-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 30px -10px rgba(0, 219, 255, 0.15);
 }
 
 :focus-visible {
@@ -48,8 +84,7 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--foreground);
-  opacity: 0.2;
+  background: rgba(100, 116, 139, 0.4);
   border-radius: 3px;
 }
 

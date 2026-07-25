@@ -15,7 +15,7 @@ export enum LogLevel {
 interface ErrorContext {
   component?: string;
   action?: string;
-  [key: string]: any;
+  [key: string]: string | number | boolean | undefined;
 }
 
 /**
@@ -32,8 +32,8 @@ export function reportError(error: unknown, context?: ErrorContext): void {
 
   // In production, errors are automatically captured by Sentry instrumentation
   // This function can be extended to add custom context
-  if (typeof window !== 'undefined' && (window as any).__SENTRY__) {
-    (window as any).__SENTRY__.captureException(error, {
+  if (typeof window !== 'undefined' && (window as Window & { __SENTRY__?: { captureException: (e: unknown, ctx: object) => void } }).__SENTRY__) {
+    (window as Window & { __SENTRY__?: { captureException: (e: unknown, ctx: object) => void } }).__SENTRY__?.captureException(error, {
       tags: context,
     });
   }

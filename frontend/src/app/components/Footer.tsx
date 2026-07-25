@@ -1,237 +1,93 @@
 'use client';
-
-import Image from "next/image";
-import Link from "next/link";
-import { motion } from "framer-motion";
-import {
-  FiFacebook,
-  FiInstagram,
-  FiLinkedin,
-  FiMail,
-  FiPhone,
-  FiMapPin,
-  FiArrowUp,
-  FiChevronRight
-} from "react-icons/fi";
-
-const socialLinks = [
-  { name: 'Facebook', icon: <FiFacebook />, href: '#', color: 'hover:bg-blue-600' },
-  { name: 'Instagram', icon: <FiInstagram />, href: 'https://www.instagram.com/nortech.inovacao', color: 'hover:bg-pink-600' },
-  { name: 'LinkedIn', icon: <FiLinkedin />, href: '#', color: 'hover:bg-blue-700' },
-];
-
-const quickLinks = [
-  { label: 'Início', href: '/#hero' },
-  { label: 'Sobre Nós', href: '/#about' },
-  { label: 'Serviços (Catálogo)', href: '/servicos' },
-  { label: 'Sobre os Serviços', href: '/sobre-servicos' },
-  { label: 'Portfólio', href: '/#portfolio' },
-  { label: 'Planos', href: '/plans' },
-  { label: 'Processo', href: '/processo' },
-  { label: 'Acessibilidade', href: '/nortech-accessibility' },
-];
-
-const legalLinks = [
-  { label: 'Privacidade', href: '/politica-de-privacidade' },
-  { label: 'Termos', href: '/termos-de-uso' },
-];
+import Link from 'next/link';
+import Image from 'next/image';
+import { FOOTER_NAV_SECTIONS } from '@/data/navigation';
+import { ShieldCheck, Mail, MapPin, Phone } from 'lucide-react';
 
 export default function Footer() {
-  const scrollToTop = () => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
   return (
-    <footer className="relative bg-background text-foreground pt-24 pb-12 overflow-hidden border-t border-foreground/5 transition-colors">
-      {/* Premium Background Elements */}
-      <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-cyan-500/10 rounded-full blur-[120px] -z-10 pointer-events-none"></div>
-      <div className="absolute bottom-0 right-1/4 w-[400px] h-[400px] bg-blue-500/5 rounded-full blur-[100px] -z-10 pointer-events-none"></div>
-
-      <div 
-        className="absolute inset-0 opacity-[0.03] -z-10 bg-[linear-gradient(currentColor_1px,transparent_1px),linear-gradient(90deg,currentColor_1px,transparent_1px)] bg-size-[40px_40px] text-foreground mask-[linear-gradient(180deg,black,transparent)] dark:mask-[linear-gradient(180deg,white,transparent)]"
-      />
-
-      <div className="container mx-auto px-6 relative z-10">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-12 mb-20">
-
-          {/* Brand Identity Section */}
-          <div className="lg:col-span-5 space-y-8">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              className="flex items-center group cursor-pointer"
-            >
-              <div className="relative mr-4 p-1 rounded-full bg-foreground/5 border border-foreground/10 group-hover:border-cyan-500/50 transition-all duration-500">
-                <Image
-                  src="/Nortech Inovação.png"
-                  alt="Nortech Inovação"
-                  width={44}
-                  height={44}
-                  className="rounded-full"
-                />
-                <div className="absolute inset-0 bg-cyan-500/20 blur-md rounded-full -z-10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-              </div>
-              <span className="text-2xl font-black tracking-tighter bg-linear-to-r from-foreground via-foreground to-cyan-500 dark:from-white dark:via-white dark:to-cyan-400 bg-clip-text text-transparent">
-                Nortech INOVAÇÃO
+    <footer className="w-full bg-slate-950 text-slate-300 border-t border-slate-800 pt-16 pb-12">
+      <div className="max-w-[1536px] mx-auto px-4 lg:px-8">
+        
+        {/* Main Grid Header */}
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-10 pb-12 border-b border-slate-800/80">
+          
+          {/* Brand Info */}
+          <div className="lg:col-span-2 space-y-4">
+            <Link href="/" className="flex items-center gap-3">
+              <Image
+                src="/Nortech Inovação.png"
+                alt="Logo Nortech Inovação"
+                width={40}
+                height={40}
+                className="rounded-full"
+              />
+              <span className="font-extrabold text-xl text-white tracking-tight">
+                Nortech <span className="text-cyan">INOVAÇÃO</span>
               </span>
-            </motion.div>
+            </Link>
 
-            <motion.p
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.1 }}
-              className="text-foreground/70 max-w-sm leading-relaxed text-lg"
-            >
-              Desenvolvimento de software com foco em qualidade e resultados concretos.
-            </motion.p>
+            <p className="text-xs text-slate-400 leading-relaxed max-w-sm">
+              Plataforma tecnológica enterprise modular. Engenharia de software, inteligência artificial, infraestrutura de redes, cyber security e transição digital para empresas de alta performance.
+            </p>
 
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.2 }}
-              className="flex gap-4"
-            >
-              {socialLinks.map((social) => (
-                <Link
-                  key={social.name}
-                  href={social.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={`group relative w-12 h-12 flex items-center justify-center rounded-xl bg-foreground/5 border border-foreground/10 text-foreground/70 hover:text-foreground transition-all duration-300 ${social.color}`}
-                >
-                  <span className="text-xl relative z-10 group-hover:scale-110 transition-transform">
-                    {social.icon}
-                  </span>
-                  <div className="absolute inset-0 rounded-xl bg-foreground/10 opacity-0 group-hover:opacity-100 transition-opacity blur-sm"></div>
-                </Link>
-              ))}
-            </motion.div>
-          </div>
-
-          {/* Navigation Links */}
-          <div className="lg:col-span-2 space-y-6">
-            <h3 className="text-foreground font-bold text-sm uppercase tracking-widest border-l-2 border-cyan-500 pl-4">
-              Páginas
-            </h3>
-            <ul className="space-y-4">
-              {quickLinks.map((link, idx) => (
-                <motion.li
-                  key={link.label}
-                  initial={{ opacity: 0, x: -10 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: 0.1 + (idx * 0.05) }}
-                >
-                  <Link
-                    href={link.href}
-                    className="group text-foreground/70 hover:text-cyan-500 dark:hover:text-cyan-400 transition-all flex items-center text-sm"
-                  >
-                    <FiChevronRight className="w-0 group-hover:w-4 opacity-0 group-hover:opacity-100 transition-all duration-300 text-cyan-500" />
-                    <span className="group-hover:translate-x-1 transition-transform">{link.label}</span>
-                  </Link>
-                </motion.li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Legal Section */}
-          <div className="lg:col-span-2 space-y-6">
-            <h3 className="text-foreground font-bold text-sm uppercase tracking-widest border-l-2 border-cyan-500 pl-4">
-              Legal
-            </h3>
-            <ul className="space-y-4">
-              {legalLinks.map((link, idx) => (
-                <motion.li
-                  key={link.label}
-                  initial={{ opacity: 0, x: -10 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: 0.2 + (idx * 0.05) }}
-                >
-                  <Link
-                    href={link.href}
-                    className="group text-foreground/70 hover:text-cyan-500 dark:hover:text-cyan-400 transition-all flex items-center text-sm"
-                  >
-                    <FiChevronRight className="w-0 group-hover:w-4 opacity-0 group-hover:opacity-100 transition-all duration-300 text-cyan-500" />
-                    <span className="group-hover:translate-x-1 transition-transform">{link.label}</span>
-                  </Link>
-                </motion.li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Contact Section */}
-          <div className="lg:col-span-3 space-y-6">
-            <h3 className="text-foreground font-bold text-sm uppercase tracking-widest border-l-2 border-cyan-500 pl-4">
-              Contato
-            </h3>
-            <div className="space-y-6">
-              {[
-                { icon: <FiMail />, text: 'contato.nortechinovacao@gmail.com', label: 'E-mail' },
-                { icon: <FiPhone />, text: '+55 (98) 9999-9999', label: 'Telefone' },
-                { icon: <FiMapPin />, text: 'São Luís - MA, Brasil', label: 'Localização' },
-              ].map((item, idx) => (
-                <motion.div
-                  key={idx}
-                  initial={{ opacity: 0, y: 10 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: 0.3 + (idx * 0.1) }}
-                  className="flex items-start group"
-                >
-                  <div className="w-10 h-10 shrink-0 rounded-lg bg-foreground/5 border border-foreground/10 flex items-center justify-center text-cyan-500 dark:text-cyan-400 group-hover:bg-cyan-500 group-hover:text-white dark:group-hover:text-black transition-all duration-500">
-                    {item.icon}
-                  </div>
-                  <div className="ml-4">
-                    <p className="text-[10px] text-foreground/50 uppercase tracking-widest mb-0.5">{item.label}</p>
-                    <p className="text-foreground/80 group-hover:text-foreground transition-colors text-sm">{item.text}</p>
-                  </div>
-                </motion.div>
-              ))}
+            {/* Contact Quick Highlights */}
+            <div className="space-y-2 pt-2 text-xs text-slate-400">
+              <div className="flex items-center gap-2">
+                <MapPin className="w-3.5 h-3.5 text-cyan shrink-0" />
+                <span>São Paulo | Rio de Janeiro | Hubs Nacionais</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Mail className="w-3.5 h-3.5 text-cyan shrink-0" />
+                <span>contato@nortechinovacao.com.br</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Phone className="w-3.5 h-3.5 text-cyan shrink-0" />
+                <span>Central NOC 24/7: 0800 591 0420</span>
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* Divider with Glow */}
-        <div className="relative">
-          <div className="h-px w-full bg-linear-to-r from-transparent via-foreground/10 to-transparent"></div>
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 h-[2px] w-48 bg-cyan-500 blur-sm"></div>
-        </div>
-
-        {/* Footer Bottom */}
-        <div className="mt-12 flex flex-col md:flex-row items-center justify-between gap-8">
-          <motion.div
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            className="flex flex-col items-center md:items-start space-y-2"
-          >
-            <p className="text-xs font-bold text-foreground/70 uppercase tracking-[0.3em]">
-              © 2026 <span className="text-foreground drop-shadow-[0_0_8px_rgba(0,0,0,0.3)] dark:drop-shadow-[0_0_8px_rgba(255,255,255,0.3)]">Nortech INOVAÇÃO</span>
-            </p>
-            <p className="text-[11px] font-medium text-foreground/70 uppercase tracking-widest flex items-center gap-2">
-              <span className="w-4 h-px bg-cyan-500/50"></span>
-              Desenvolvimento de Software
-            </p>
-          </motion.div>
-
-          {/* Back to Top */}
-          <motion.button
-            whileHover={{ y: -5 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={scrollToTop}
-            className="group relative px-8 py-3 rounded-full bg-foreground/5 border border-foreground/10 overflow-hidden transition-all duration-500 hover:border-cyan-500/50 text-foreground"
-          >
-            <div className="absolute inset-0 bg-linear-to-r from-cyan-500/0 via-cyan-500/10 to-cyan-500/0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
-            <div className="relative flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em]">
-              <span>Voltar ao topo</span>
-              <FiArrowUp className="w-4 h-4 text-cyan-500 group-hover:-translate-y-1 transition-transform" />
+          {/* Dynamic Nav Columns */}
+          {FOOTER_NAV_SECTIONS.slice(0, 3).map((col, idx) => (
+            <div key={idx} className="space-y-3">
+              <h4 className="text-xs font-bold uppercase tracking-wider text-white border-b border-slate-800 pb-2">
+                {col.title}
+              </h4>
+              <ul className="space-y-2 text-xs">
+                {col.links.map((link, i) => (
+                  <li key={i}>
+                    <Link
+                      href={link.href}
+                      className="text-slate-400 hover:text-cyan transition-colors inline-flex items-center gap-1"
+                    >
+                      <span>{link.name}</span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
             </div>
-          </motion.button>
+          ))}
         </div>
+
+        {/* Bottom Certifications & Copyright */}
+        <div className="pt-8 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-slate-500">
+          <div className="flex flex-wrap items-center gap-4">
+            <span className="flex items-center gap-1.5 text-slate-400 font-semibold">
+              <ShieldCheck className="w-4 h-4 text-cyan" />
+              <span>ISO 27001 & WCAG 2.2 Compliant</span>
+            </span>
+            <span>|</span>
+            <span>Certificação Fluke Networks</span>
+            <span>|</span>
+            <span>LGPD Audited</span>
+          </div>
+
+          <div className="text-center md:text-right">
+            <p>© {new Date().getFullYear()} Nortech Inovação. Todos os direitos reservados.</p>
+          </div>
+        </div>
+
       </div>
     </footer>
   );

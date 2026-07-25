@@ -11,7 +11,6 @@ import { CheckCircle, Zap, Code2, Cloud, BarChart3, Layout, Shield } from 'lucid
 import { Button } from "../components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "../components/ui/form";
 import { Input } from "../components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 
 const contactSchema = z.object({
   name: z.string().min(2, { message: "Nome é obrigatório" }),
@@ -69,7 +68,7 @@ export default function Contact() {
         assunto: selectedProblem ? `[${selectedProblem.label}] ${data.subject || ''}` : (data.subject || 'Sem assunto'),
         mensagem: data.message,
         status: 'nao_lido'
-      }] as any);
+      }] as unknown as never[]);
       if (error) throw error;
       setSubmitted(true);
       form.reset();
