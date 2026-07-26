@@ -1,0 +1,17 @@
+{
+  "name": "nortech-site-root",
+  "private": true,
+  "workspaces": ["frontend"],
+  "scripts": {
+    "dev": "npm --workspace frontend run dev",
+    "build": "npm --workspace frontend run build",
+    "start": "npm --workspace frontend run start",
+    "vercel-build": "npm --workspace frontend run build"
+  },
+  "dependencies": {
+    "next": "^15.5.20",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0"
+  },
+  "packageManager": "npm@10.9.0"
+}
