@@ -1,7 +1,8 @@
 "use client";
 
 import { useForm } from 'react-hook-form';
-import { supabase } from '@/lib/supabase';
+import { getSupabaseClient } from '@/lib/supabase';
+import { getErrorMessage, reportError } from '@/lib/logger';
 import { useState } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -49,6 +50,7 @@ function StepIndicator({ current, total }: { current: number; total: number }) {
 export default function Contact() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [submitError, setSubmitError] = useState('');
   const [selectedProblem, setSelectedProblem] = useState<typeof problemTypes[0] | null>(null);
   const [step, setStep] = useState(0); 
 
@@ -59,8 +61,9 @@ export default function Contact() {
 
   const onSubmit = async (data: ContactFormValues) => {
     setIsSubmitting(true);
+    setSubmitError('');
     try {
-      if (!supabase) throw new Error('Supabase não inicializado');
+      const supabase = getSupabaseClient();
 
       const { error } = await supabase.from('contatos').insert([{
         nome: data.name,
@@ -73,8 +76,10 @@ export default function Contact() {
       setSubmitted(true);
       form.reset();
     } catch (err) {
-      console.error(err);
-      alert('Erro ao enviar.');
+      reportError(err, { component: 'Contact', action: 'submitContactForm' });
+      setSubmitError(
+        getErrorMessage(err, 'Não foi possível enviar sua mensagem. Tente novamente.')
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -97,6 +102,11 @@ export default function Contact() {
         ) : (
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              {submitError && (
+                <p role="alert" className="text-sm text-red-400 border border-red-500/30 bg-red-500/10 rounded-lg p-3">
+                  {submitError}
+                </p>
+              )}
               <FormField control={form.control} name="name" render={({ field }) => (
                 <FormItem>
                   <FormLabel>Nome</FormLabel>

@@ -59,3 +59,33 @@ describe('supabase client', () => {
     expect(supabase).toBeNull();
   });
 });
+
+describe('getSupabaseClient', () => {
+  beforeEach(() => {
+    vi.resetModules();
+    createClient.mockClear();
+  });
+
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
+  it('returns the client when configured', async () => {
+    vi.stubEnv('NEXT_PUBLIC_SUPABASE_URL', 'https://example.supabase.co');
+    vi.stubEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY', 'anon-key');
+
+    const { getSupabaseClient, isSupabaseConfigured } = await importSupabase();
+
+    expect(isSupabaseConfigured).toBe(true);
+    expect(getSupabaseClient()).not.toBeNull();
+  });
+
+  it('throws SupabaseConfigError when credentials are missing', async () => {
+    vi.stubEnv('NEXT_PUBLIC_SUPABASE_URL', '');
+    vi.stubEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY', '');
+
+    const { getSupabaseClient, SupabaseConfigError } = await importSupabase();
+
+    expect(() => getSupabaseClient()).toThrow(SupabaseConfigError);
+  });
+});

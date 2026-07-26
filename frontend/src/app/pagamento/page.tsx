@@ -10,7 +10,9 @@ import { FiCheckCircle } from 'react-icons/fi';
 
 import AuthShell from '../components/auth/AuthShell';
 import { formatCurrency } from '@/lib/utils';
-import { supabase } from '@/lib/supabase';
+import { getSupabaseClient } from '@/lib/supabase';
+import { getErrorMessage, logWarning, reportError } from '@/lib/logger';
+import { appendPaymentHistory } from '@/lib/paymentHistory';
 import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -75,6 +77,7 @@ const PaymentContent = () => {
   const [activeTab, setActiveTab] = useState<'boleto' | 'pix' | 'cartao'>('pix');
   const [copiedPixCode, setCopiedPixCode] = useState(false);
   const [pagamentoFinalizado, setPagamentoFinalizado] = useState(false);
+  const [erroPagamento, setErroPagamento] = useState('');
 
   const [planName, setPlanName] = useState('Plano Premium');
   const [valorOriginal, setValorOriginal] = useState(49.99);
@@ -113,6 +116,13 @@ const PaymentContent = () => {
       if (Number.isFinite(p) && p > 0) {
         setValorOriginal(p);
         setValorComDesconto(p);
+      } else {
+        logWarning('Preço inválido na URL de pagamento', {
+          component: 'Payment',
+          action: 'parsePriceParam',
+          price,
+        });
+        setErroPagamento('Valor do plano inválido no link. Selecione o plano novamente.');
       }
     }
     generarCodigoBarrasAleatorio();
@@ -162,38 +172,43 @@ const PaymentContent = () => {
     return `00020126360014BR.GOV.BCB.PIX0114+5548999999999520400005303986540${valor.toFixed(2).length.toString().padStart(2, '0')}${valor.toFixed(2)}5802BR5925Nortech INOVACAO6007BRASILIA62070503***6304`;
   };
 
-  const copyPixCode = () => {
-    navigator.clipboard.writeText(getPixCode());
-    setCopiedPixCode(true);
-    setTimeout(() => setCopiedPixCode(false), 2000);
+  const copyPixCode = async () => {
+    try {
+      await navigator.clipboard.writeText(getPixCode());
+      setCopiedPixCode(true);
+      setTimeout(() => setCopiedPixCode(false), 2000);
+    } catch (error) {
+      reportError(error, { component: 'Payment', action: 'copyPixCode' });
+      setErroPagamento('Não foi possível copiar o código Pix. Copie manualmente.');
+    }
   };
 
   const handleFinalizarPagamento = async (values: PaymentFormValues) => {
     let valorPago = descontoAplicado ? valorComDesconto : valorOriginal;
+    setErroPagamento('');
 
-    if (activeTab === 'boleto') {
-      await handleDownloadPdf();
+    if (activeTab === 'boleto' && !(await downloadBoleto())) {
+      return;
     }
 
-    setPagamentoFinalizado(true);
-
     try {
-      const client = supabase;
-      if (!client) {
-        return;
-      }
+      const client = getSupabaseClient();
 
-      const { data: userData } = await (client
+      const { data: userData, error: userError } = await (client
         .from('usuarios')
         .select('id')
         .eq('email', 'edmilson@nortechinovacao.com')
         .single() as unknown as Promise<PostgrestSingleResponse<Record<string, unknown>>>);
 
-      const { data: planData } = await (client
+      if (userError) throw userError;
+
+      const { data: planData, error: planError } = await (client
         .from('planos')
         .select('id, preco_mensal')
         .eq('nome', planName)
         .single() as unknown as Promise<PostgrestSingleResponse<Record<string, unknown>>>);
+
+      if (planError) throw planError;
 
       // O preço do plano vem da base, nunca da query string
       const precoDoPlano = Number(planData?.preco_mensal);
@@ -219,11 +234,15 @@ const PaymentContent = () => {
 
       if (error) throw error;
     } catch (error) {
-      console.error('Erro ao registrar pagamento:', error);
+      reportError(error, { component: 'Payment', action: 'registrarPagamento' });
+      setErroPagamento(
+        getErrorMessage(error, 'Não foi possível registrar seu pagamento. Tente novamente.')
+      );
+      return;
     }
 
-    const historico = JSON.parse(localStorage.getItem('historicoPagamentos') || '[]');
-    historico.unshift({
+    // Histórico local é apenas informativo: falhas são reportadas sem bloquear o fluxo
+    appendPaymentHistory({
       id: Date.now(),
       data: new Date().toLocaleDateString('pt-BR'),
       hora: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
@@ -232,7 +251,8 @@ const PaymentContent = () => {
       plano: planName,
       status: 'Concluído'
     });
-    localStorage.setItem('historicoPagamentos', JSON.stringify(historico));
+
+    setPagamentoFinalizado(true);
 
     setTimeout(() => {
       router.push('/');
@@ -241,27 +261,37 @@ const PaymentContent = () => {
 
   // Função otimizada para download de PDF
   const handleDownloadPdf = useCallback(async () => {
-    try {
-      // Importação dinâmica para evitar carregamento desnecessário
-      const { default: jsPDF } = await import('jspdf');
-      
-      const pdf = new jsPDF();
-      pdf.setFillColor(0, 0, 0);
-      pdf.rect(0, 0, 210, 40, 'F');
-      pdf.setTextColor(255, 255, 255);
-      pdf.setFontSize(22);
-      pdf.text('Nortech INOVAÇÃO', 50, 20);
-      pdf.setFontSize(14);
-      pdf.text('DETALHES DO PEDIDO', 20, 60);
-      pdf.setTextColor(0, 0, 0);
-      pdf.text(`Plano: ${planName}`, 20, 75);
-      pdf.text(`Valor: ${formatCurrency(descontoAplicado ? valorComDesconto : valorOriginal)}`, 20, 85);
-      pdf.text(`Código de Barras: ${boletoCode}`, 20, 100);
-      pdf.save('boleto-nortech.pdf');
-    } catch (error) {
-      console.error('Erro ao gerar PDF:', error);
-    }
+    // Importação dinâmica para evitar carregamento desnecessário
+    const { default: jsPDF } = await import('jspdf');
+
+    const pdf = new jsPDF();
+    pdf.setFillColor(0, 0, 0);
+    pdf.rect(0, 0, 210, 40, 'F');
+    pdf.setTextColor(255, 255, 255);
+    pdf.setFontSize(22);
+    pdf.text('Nortech INOVAÇÃO', 50, 20);
+    pdf.setFontSize(14);
+    pdf.text('DETALHES DO PEDIDO', 20, 60);
+    pdf.setTextColor(0, 0, 0);
+    pdf.text(`Plano: ${planName}`, 20, 75);
+    pdf.text(`Valor: ${formatCurrency(descontoAplicado ? valorComDesconto : valorOriginal)}`, 20, 85);
+    pdf.text(`Código de Barras: ${boletoCode}`, 20, 100);
+    pdf.save('boleto-nortech.pdf');
   }, [planName, descontoAplicado, valorComDesconto, valorOriginal, boletoCode]);
+
+  /** Gera o boleto reportando falhas ao usuário; retorna false quando falha. */
+  const downloadBoleto = useCallback(async () => {
+    try {
+      await handleDownloadPdf();
+      return true;
+    } catch (error) {
+      reportError(error, { component: 'Payment', action: 'gerarBoletoPdf' });
+      setErroPagamento(
+        getErrorMessage(error, 'Não foi possível gerar o boleto em PDF. Tente novamente.')
+      );
+      return false;
+    }
+  }, [handleDownloadPdf]);
 
   return (
     <AuthShell
@@ -286,6 +316,12 @@ const PaymentContent = () => {
               </div>
             )}
 
+            {erroPagamento && (
+              <div role="alert" className="mb-8 p-4 bg-red-500/10 border border-red-500/30 rounded-xl text-sm text-red-400">
+                {erroPagamento}
+              </div>
+            )}
+
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
               <div className="lg:col-span-2 space-y-8">
                 <Tabs defaultValue="pix" value={activeTab} onValueChange={(v) => setActiveTab(v as 'boleto' | 'pix' | 'cartao')} className="w-full">
@@ -305,7 +341,7 @@ const PaymentContent = () => {
                           />
                         </div>
                       </div>
-                      <Button type="button" onClick={copyPixCode} variant="outline" className="w-full border-cyan-500/30 text-cyan-400">
+                      <Button type="button" onClick={() => void copyPixCode()} variant="outline" className="w-full border-cyan-500/30 text-cyan-400">
                         {copiedPixCode ? "Copiado!" : "Copiar Código Pix"}
                       </Button>
                     </div>
@@ -319,7 +355,7 @@ const PaymentContent = () => {
                       </div>
                       <Button 
                         type="button" 
-                        onClick={handleDownloadPdf} 
+                        onClick={() => void downloadBoleto()}
                         className="w-full mt-4 bg-cyan-500 text-black hover:bg-cyan-400 transition-all"
                       >
                         📄 Baixar Boleto PDF

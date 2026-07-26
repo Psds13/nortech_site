@@ -1,5 +1,14 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { LogLevel, reportError, logWarning, logInfo } from './logger';
+
+const captureException = vi.fn();
+const captureMessage = vi.fn();
+
+vi.mock('@sentry/nextjs', () => ({
+  captureException: (...args: unknown[]) => captureException(...args),
+  captureMessage: (...args: unknown[]) => captureMessage(...args),
+}));
+
+import { LogLevel, reportError, logWarning, logInfo, toError, getErrorMessage } from './logger';
 
 describe('LogLevel', () => {
   it('exposes the expected string values', () => {
@@ -12,11 +21,12 @@ describe('LogLevel', () => {
 describe('logger', () => {
   beforeEach(() => {
     vi.restoreAllMocks();
+    captureException.mockClear();
+    captureMessage.mockClear();
   });
 
   afterEach(() => {
     vi.unstubAllEnvs();
-    delete (window as unknown as { __SENTRY__?: unknown }).__SENTRY__;
   });
 
   describe('reportError', () => {
@@ -40,23 +50,27 @@ describe('logger', () => {
       expect(spy).not.toHaveBeenCalled();
     });
 
-    it('forwards the error to Sentry when window.__SENTRY__ is present', () => {
+    it('forwards the error to Sentry with context', () => {
       vi.stubEnv('NODE_ENV', 'production');
-      const captureException = vi.fn();
-      (window as unknown as { __SENTRY__: { captureException: typeof captureException } }).__SENTRY__ = {
-        captureException,
-      };
       const error = new Error('boom');
-      const context = { component: 'Form' };
+      const context = { component: 'Form', action: 'submit' };
 
       reportError(error, context);
 
-      expect(captureException).toHaveBeenCalledWith(error, { tags: context });
+      expect(captureException).toHaveBeenCalledWith(error, {
+        level: LogLevel.ERROR,
+        tags: { component: 'Form', action: 'submit' },
+        extra: context,
+      });
     });
 
-    it('does not throw when Sentry is absent', () => {
-      vi.stubEnv('NODE_ENV', 'production');
-      expect(() => reportError(new Error('boom'))).not.toThrow();
+    it('normalizes non-Error values before reporting', () => {
+      reportError({ message: 'postgrest failed', code: '23505' });
+
+      const reported = captureException.mock.calls[0][0] as Error;
+      expect(reported).toBeInstanceOf(Error);
+      expect(reported.message).toBe('postgrest failed');
+      expect(reported.name).toBe('23505');
     });
   });
 
@@ -70,13 +84,23 @@ describe('logger', () => {
       expect(spy).toHaveBeenCalledWith('careful', { field: 'email' });
     });
 
-    it('is silent outside development', () => {
+    it('does not log to console.warn outside development', () => {
       vi.stubEnv('NODE_ENV', 'production');
       const spy = vi.spyOn(console, 'warn').mockImplementation(() => {});
 
       logWarning('careful');
 
       expect(spy).not.toHaveBeenCalled();
+    });
+
+    it('reports the warning to Sentry', () => {
+      logWarning('careful', { component: 'Libras' });
+
+      expect(captureMessage).toHaveBeenCalledWith('careful', {
+        level: LogLevel.WARNING,
+        tags: { component: 'Libras', action: undefined },
+        extra: { component: 'Libras' },
+      });
     });
   });
 
@@ -97,6 +121,31 @@ describe('logger', () => {
       logInfo('logged in');
 
       expect(spy).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('toError', () => {
+    it('passes through Error instances', () => {
+      const error = new Error('boom');
+      expect(toError(error)).toBe(error);
+    });
+
+    it('serializes objects without a message', () => {
+      expect(toError({ status: 500 }).message).toBe('{"status":500}');
+    });
+
+    it('stringifies primitives', () => {
+      expect(toError('boom').message).toBe('boom');
+    });
+  });
+
+  describe('getErrorMessage', () => {
+    it('prefers the error message', () => {
+      expect(getErrorMessage(new Error('boom'), 'fallback')).toBe('boom');
+    });
+
+    it('falls back for empty errors', () => {
+      expect(getErrorMessage(new Error(''), 'fallback')).toBe('fallback');
     });
   });
 });

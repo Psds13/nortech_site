@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { FiCheck, FiZap, FiUsers, FiClock, FiShield, FiGlobe, FiLayers } from 'react-icons/fi';
+import { getErrorMessage, reportError } from '@/lib/logger';
 
 interface PlanFeature {
   text: string;
@@ -61,6 +62,7 @@ const PricingSection = () => {
   const [hoveredPlan, setHoveredPlan] = useState<string | null>(null);
   const [plansList, setPlansList] = useState<Plan[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState('');
 
   const getIconForFeature = (text: string) => {
     if (text.includes('chat') || text.includes('interações')) return <FiClock className="text-blue-400" />;
@@ -74,6 +76,7 @@ const PricingSection = () => {
 
   useEffect(() => {
     const fetchPlans = async () => {
+      setLoadError('');
       try {
         const mappedPlans: Plan[] = rawPlans.map((p) => ({
           id: p.id,
@@ -93,13 +96,14 @@ const PricingSection = () => {
         }));
         setPlansList(mappedPlans);
       } catch (error) {
-        console.error('Erro ao carregar planos:', error);
+        reportError(error, { component: 'PricingSection', action: 'fetchPlans' });
+        setLoadError(getErrorMessage(error, 'Não foi possível carregar os planos.'));
       } finally {
         setLoading(false);
       }
     };
 
-    fetchPlans();
+    void fetchPlans();
   }, [annualBilling]);
 
 
@@ -153,8 +157,8 @@ const PricingSection = () => {
           <div className="text-center py-20 bg-white/5 rounded-2xl border border-white/10 backdrop-blur-sm">
             <FiShield className="w-16 h-16 text-gray-600 mx-auto mb-4 opacity-50" />
             <h3 className="text-xl font-semibold text-white mb-2">Planos indisponíveis</h3>
-            <p className="text-gray-400 max-w-md mx-auto">
-              Não conseguimos carregar os planos no momento. Tente novamente mais tarde.
+            <p role="alert" className="text-gray-400 max-w-md mx-auto">
+              {loadError || 'Não conseguimos carregar os planos no momento. Tente novamente mais tarde.'}
             </p>
             <Link href="/contatos" className="inline-block mt-6 px-6 py-2 bg-cyan-500 text-black font-semibold rounded-lg hover:bg-cyan-400 transition-colors">
               Fale conosco

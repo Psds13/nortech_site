@@ -2,6 +2,7 @@
 
 import { useEffect, useCallback } from 'react';
 import Script from 'next/script';
+import { logWarning, reportError } from '@/lib/logger';
 
 declare global {
   interface Window {
@@ -23,11 +24,7 @@ const Libras = () => {
         try {
           new window.VLibras.Widget('https://vlibras.gov.br/app');
         } catch (error) {
-          // VLibras initialization errors are tracked via Sentry
-          console.error('VLibras init failed', error);
-          if (typeof window !== 'undefined' && window.__SENTRY__) {
-            // Sentry reporting would go here
-          }
+          reportError(error, { component: 'Libras', action: 'initVLibras' });
         }
       }
     }
@@ -48,6 +45,13 @@ const Libras = () => {
         src="https://vlibras.gov.br/app/vlibras-plugin.js"
         strategy="lazyOnload"
         onReady={initVLibras}
+        onError={(error) =>
+          logWarning('Falha ao carregar o plugin VLibras', {
+            component: 'Libras',
+            action: 'loadScript',
+            message: error.message,
+          })
+        }
       />
       <div data-vw="true" className="enabled">
         <div data-vw-access-button="true" className="active" />

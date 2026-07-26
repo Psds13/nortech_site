@@ -1,5 +1,6 @@
 'use client';
 import { useState } from 'react';
+import { reportError, toError } from '@/lib/logger';
 
 export function useAuth() {
   const [user, setUser] = useState<null | { id: string; email: string; name?: string }>(null);
@@ -12,7 +13,8 @@ export function useAuth() {
       setUser({ id: 'demo-user-id', email, name });
       return { data: { user: { id: 'demo-user-id', email, name } }, error: null };
     } catch (err) {
-      return { data: null, error: err };
+      reportError(err, { component: 'useAuth', action: 'signUp' });
+      return { data: null, error: toError(err) };
     } finally {
       setLoading(false);
     }
@@ -26,7 +28,8 @@ export function useAuth() {
       setUser({ id: 'demo-user-id', email });
       return { data: { user: { id: 'demo-user-id', email } }, error: null };
     } catch (err) {
-      return { data: null, error: err };
+      reportError(err, { component: 'useAuth', action: 'signIn' });
+      return { data: null, error: toError(err) };
     } finally {
       setLoading(false);
     }

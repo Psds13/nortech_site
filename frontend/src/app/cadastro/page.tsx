@@ -16,6 +16,7 @@ import {
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+import { getErrorMessage, reportError } from "@/lib/logger";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -149,11 +150,10 @@ export default function CadastroPage() {
         router.push("/login?registered=true");
       }, 3000);
     } catch (error: unknown) {
-      console.error("Erro no cadastro:", error);
-      const message =
-        (error as Error)?.message ||
-        "Erro ao cadastrar. Verifique seus dados e tente novamente.";
-      setGlobalError(message);
+      reportError(error, { component: "RegisterPage", action: "signUp" });
+      setGlobalError(
+        getErrorMessage(error, "Erro ao cadastrar. Verifique seus dados e tente novamente.")
+      );
     } finally {
       setLoading(false);
     }
