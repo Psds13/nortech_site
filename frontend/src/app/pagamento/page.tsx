@@ -106,11 +106,13 @@ const PaymentContent = () => {
     const plan = searchParams.get('plan');
     const price = searchParams.get('price');
 
-    if (plan) setPlanName(plan);
+    if (plan) setPlanName(plan.slice(0, 50));
     if (price) {
       const p = parseFloat(price);
-      setValorOriginal(p);
-      setValorComDesconto(p);
+      if (Number.isFinite(p) && p > 0) {
+        setValorOriginal(p);
+        setValorComDesconto(p);
+      }
     }
     generarCodigoBarrasAleatorio();
   }, [searchParams, generarCodigoBarrasAleatorio]);
@@ -166,7 +168,7 @@ const PaymentContent = () => {
   };
 
   const handleFinalizarPagamento = async (values: PaymentFormValues) => {
-    const valorPago = descontoAplicado ? valorComDesconto : valorOriginal;
+    let valorPago = descontoAplicado ? valorComDesconto : valorOriginal;
 
     if (activeTab === 'boleto') {
       await handleDownloadPdf();
@@ -188,9 +190,15 @@ const PaymentContent = () => {
 
       const { data: planData } = await (client
         .from('planos')
-        .select('id')
+        .select('id, preco_mensal')
         .eq('nome', planName)
         .single() as unknown as Promise<PostgrestSingleResponse<Record<string, unknown>>>);
+
+      // O preço do plano vem da base, nunca da query string
+      const precoDoPlano = Number(planData?.preco_mensal);
+      if (Number.isFinite(precoDoPlano) && precoDoPlano > 0) {
+        valorPago = aplicarDescontoLogic(precoDoPlano, descontoAplicado ? values.discountCode : undefined).valorComDesconto;
+      }
 
       const { error } = await (client
         .from('pagamentos') as unknown as { insert: (data: Record<string, unknown>[]) => Promise<{ error: unknown }> })
