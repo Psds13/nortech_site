@@ -1,52 +1,53 @@
 package com.geds.api.controllers;
 
+import com.geds.api.dto.LoginRequest;
+import com.geds.api.dto.RegisterRequest;
+import com.geds.api.dto.UsuarioResponse;
 import com.geds.api.entities.Usuario;
 import com.geds.api.repositories.UsuarioRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.Map;
 import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/auth")
-@CrossOrigin(origins = "*")
 public class AuthController {
 
-    @Autowired
-    private UsuarioRepository usuarioRepository;
+    private final UsuarioRepository usuarioRepository;
+    private final PasswordEncoder passwordEncoder;
+
+    public AuthController(UsuarioRepository usuarioRepository, PasswordEncoder passwordEncoder) {
+        this.usuarioRepository = usuarioRepository;
+        this.passwordEncoder = passwordEncoder;
+    }
 
     @PostMapping("/register")
-    public ResponseEntity<?> register(@RequestBody Usuario usuario) {
-        if (usuarioRepository.findByEmail(usuario.getEmail()).isPresent()) {
-            return ResponseEntity.badRequest().body("{\"message\": \"E-mail já cadastrado\"}");
+    public ResponseEntity<?> register(@Valid @RequestBody RegisterRequest request) {
+        if (usuarioRepository.findByEmail(request.email()).isPresent()) {
+            return ResponseEntity.badRequest().body(Map.of("message", "E-mail já cadastrado"));
         }
-        
-        // Em um sistema real, a senha deve ser criptografada aqui
-        Usuario salvo = usuarioRepository.save(usuario);
-        return ResponseEntity.ok(salvo);
+
+        Usuario usuario = new Usuario();
+        usuario.setNome(request.nome());
+        usuario.setEmail(request.email());
+        usuario.setSenha(passwordEncoder.encode(request.senha()));
+        usuario.setCargo("Usuário");
+
+        return ResponseEntity.ok(UsuarioResponse.from(usuarioRepository.save(usuario)));
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody Map<String, String> credentials) {
-        String email = credentials.get("email");
-        String senha = credentials.get("senha");
+    public ResponseEntity<?> login(@Valid @RequestBody LoginRequest request) {
+        Optional<Usuario> usuarioOpt = usuarioRepository.findByEmail(request.email());
 
-        if (email == null || senha == null) {
-            return ResponseEntity.badRequest().body("{\"message\": \"Email e senha são obrigatórios\"}");
+        if (usuarioOpt.isEmpty() || !passwordEncoder.matches(request.senha(), usuarioOpt.get().getSenha())) {
+            return ResponseEntity.status(401).body(Map.of("message", "Credenciais inválidas"));
         }
 
-        Optional<Usuario> usuarioOpt = usuarioRepository.findByEmail(email);
-        if (usuarioOpt.isEmpty()) {
-            return ResponseEntity.status(401).body("{\"message\": \"Credenciais inválidas\"}");
-        }
-
-        Usuario usuario = usuarioOpt.get();
-        // Senha em texto claro — em produção, use hashing
-        if (!senha.equals(usuario.getSenha())) {
-            return ResponseEntity.status(401).body("{\"message\": \"Credenciais inválidas\"}");
-        }
-
-        return ResponseEntity.ok(usuario);
+        return ResponseEntity.ok(UsuarioResponse.from(usuarioOpt.get()));
     }
 }
