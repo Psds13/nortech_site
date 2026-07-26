@@ -1,3 +1,5 @@
+import type { LucideIcon } from 'lucide-react';
+
 // src/types/index.ts
 
 export type EcosystemCategory = 
@@ -91,4 +93,38 @@ export interface DashboardMetric {
   value: string;
   change: string;
   isPositive: boolean;
+}
+
+export interface UnitStat {
+  value: string;
+  label: string;
+}
+
+export interface UnitSpecItem {
+  label: string;
+  value: string;
+  highlight?: boolean;
+}
+
+export interface UnitDeliverable {
+  title: string;
+  desc: string;
+}
+
+export interface UnitPillar {
+  icon: LucideIcon;
+  title: string;
+  desc: string;
+}
+
+export interface UnitPageContent {
+  name: string;
+  eyebrow: string;
+  eyebrowIcon: LucideIcon;
+  description: string;
+  stats: UnitStat[];
+  cta: { label: string; href: string };
+  spec: { icon: LucideIcon; title: string; items: UnitSpecItem[] };
+  deliverables: { eyebrow: string; title: string; items: UnitDeliverable[] };
+  pillars?: UnitPillar[];
 }
