@@ -18,6 +18,9 @@ out/
 # production
 build/
 
+# java / maven build output
+target/
+
 # misc
 .DS_Store
 *.pem
