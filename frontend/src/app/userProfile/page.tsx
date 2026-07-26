@@ -1,6 +1,7 @@
 'use client';
 
-import { supabase } from '@/lib/supabase';
+import { getSupabaseClient } from '@/lib/supabase';
+import { getErrorMessage, reportError } from '@/lib/logger';
 import { useEffect, useState } from 'react';
 import { PostgrestSingleResponse, PostgrestResponse } from '@supabase/supabase-js';
 import { motion } from 'framer-motion';
@@ -22,16 +23,15 @@ interface UserData {
 export default function UserProfile() {
   const [user, setUser] = useState<UserData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState('');
+  const [reloadKey, setReloadKey] = useState(0);
 
   useEffect(() => {
     const fetchUser = async () => {
+      setLoading(true);
+      setLoadError('');
       try {
-        const client = supabase;
-        if (!client) {
-          // Supabase configuration check - handled in production
-          setLoading(false);
-          return;
-        }
+        const client = getSupabaseClient();
 
         const { data, error } = await (client
           .from('usuarios')
@@ -60,22 +60,17 @@ export default function UserProfile() {
           });
         }
       } catch (error) {
-        console.error('Erro ao buscar perfil:', error);
-        // Mock data to ensure the futuristic dashboard always shows up even if API fails
-        setUser({
-          name: 'João Silva',
-          role: 'CEO',
-          avatar: "https://randomuser.me/api/portraits/men/32.jpg",
-          email: 'joao.silva@exemplo.com',
-          stats: { projects: 4, experience: 10, clients: 8 }
-        });
+        reportError(error, { component: 'UserProfile', action: 'fetchUser' });
+        setLoadError(
+          getErrorMessage(error, 'Não foi possível carregar o perfil.')
+        );
       } finally {
         setLoading(false);
       }
     };
 
-    fetchUser();
-  }, []);
+    void fetchUser();
+  }, [reloadKey]);
 
   if (loading) {
     return (
@@ -85,10 +80,16 @@ export default function UserProfile() {
     );
   }
 
-  if (!user) {
+  if (loadError || !user) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#050505] text-cyan-500 font-mono">
-        <p>Acesso Negado ou Usuário não encontrado.</p>
+      <div className="min-h-screen flex flex-col items-center justify-center gap-4 bg-[#050505] text-cyan-500 font-mono px-6 text-center">
+        <p role="alert">{loadError || 'Acesso Negado ou Usuário não encontrado.'}</p>
+        <button
+          onClick={() => setReloadKey((key) => key + 1)}
+          className="border border-cyan-500/50 rounded-full px-6 py-2 text-sm uppercase tracking-widest hover:bg-cyan-500/10 transition-colors"
+        >
+          Tentar novamente
+        </button>
       </div>
     );
   }

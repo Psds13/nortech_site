@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+import { getErrorMessage, reportError } from "@/lib/logger";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -52,8 +53,8 @@ export default function LoginPage() {
       // MODO TESTE: Redirecionar direto para não depender do Supabase logar
       router.push("/");
     } catch (err) {
-      console.error("Erro no login:", err);
-      setError((err as Error)?.message || "Credenciais inválidas ou erro no servidor");
+      reportError(err, { component: "LoginPage", action: "signIn" });
+      setError(getErrorMessage(err, "Credenciais inválidas ou erro no servidor"));
     } finally {
       setLoading(false);
     }
