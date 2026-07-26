@@ -16,8 +16,7 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "jsx": "preserve",
-    "ignoreDeprecations": "5.0",
-    "baseUrl": ".", // Certifique-se de que baseUrl está definido
+    "baseUrl": ".",
     "paths": {
       "@/components/*": [
         "src/app/components/*"
