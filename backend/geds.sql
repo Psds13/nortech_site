@@ -331,3 +331,42 @@ ALTER TABLE "public"."tokens_recuperacao_senha" ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.metricas_green_tech ENABLE ROW LEVEL SECURITY;
 ALTER TABLE "public"."lab_projetos" ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.beneficios_servico ENABLE ROW LEVEL SECURITY;
+
+-- -------------------------------------------------------
+-- 11. ROW LEVEL SECURITY (obrigatório no Supabase)
+-- O frontend acessa o banco diretamente com a chave anônima,
+-- portanto toda tabela precisa de RLS habilitado e de policies
+-- explícitas. Tabelas com dados sensíveis (usuarios, pagamentos,
+-- projetos, tokens) não recebem policy para o papel anon/authenticated:
+-- só devem ser acessadas pelo backend (service role).
+-- -------------------------------------------------------
+ALTER TABLE public.usuarios ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.pagamentos ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.projetos ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.planos ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.servicos ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.contatos ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.lab_projetos ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.metricas_green_tech ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.beneficios_servico ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.tokens_recuperacao_senha ENABLE ROW LEVEL SECURITY;
+
+-- Conteúdo institucional: leitura pública, escrita apenas pelo backend
+CREATE POLICY planos_leitura_publica ON public.planos
+    FOR SELECT TO anon, authenticated USING (true);
+
+CREATE POLICY servicos_leitura_publica ON public.servicos
+    FOR SELECT TO anon, authenticated USING (true);
+
+CREATE POLICY beneficios_servico_leitura_publica ON public.beneficios_servico
+    FOR SELECT TO anon, authenticated USING (true);
+
+CREATE POLICY metricas_green_tech_leitura_publica ON public.metricas_green_tech
+    FOR SELECT TO anon, authenticated USING (true);
+
+CREATE POLICY lab_projetos_leitura_publicados ON public.lab_projetos
+    FOR SELECT TO anon, authenticated USING (publicado);
+
+-- Formulário de contato: apenas inserção, nunca leitura dos leads
+CREATE POLICY contatos_insercao_publica ON public.contatos
+    FOR INSERT TO anon, authenticated WITH CHECK (true);

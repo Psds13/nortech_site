@@ -45,3 +45,6 @@ pnpm-lock.yaml
 
 # IDEs and editors
 .vscode
+
+# Java / Maven build output
+backend/target/

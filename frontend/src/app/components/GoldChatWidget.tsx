@@ -23,6 +23,17 @@ export default function GoldChatWidget() {
 
   const getTimestamp = () => new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
+  const escapeHtml = (value: string) =>
+    value
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#39;");
+
+  const renderBold = (text: string) =>
+    escapeHtml(text).replace(/\*\*(.*?)\*\*/g, '<strong class="text-cyan-300 font-black">$1</strong>');
+
   const addMessage = (from: "gold" | "user", text?: string, component?: React.ReactNode) => {
     setMessages(prev => [...prev, { id: Math.random().toString(36).substring(7), from, text, component, timestamp: getTimestamp() }]);
   };
@@ -280,7 +291,7 @@ export default function GoldChatWidget() {
                     >
                       {/* Markdown bold formatting highlight */}
                       <p className="whitespace-pre-line font-medium" 
-                         dangerouslySetInnerHTML={{ __html: msg.text.replace(/\*\*(.*?)\*\*/g, '<strong class="text-cyan-300 font-black">$1</strong>') }} />
+                         dangerouslySetInnerHTML={{ __html: renderBold(msg.text) }} />
                     </div>
                   )}
                   {msg.component && (

@@ -1,42 +1,43 @@
 package com.geds.api.controllers;
 
+import com.geds.api.dto.UsuarioResponse;
 import com.geds.api.entities.Usuario;
 import com.geds.api.repositories.ProjetoRepository;
 import com.geds.api.repositories.UsuarioRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/usuarios")
-@CrossOrigin(origins = "*")
 public class UsuarioController {
 
-    @Autowired
-    private UsuarioRepository usuarioRepository;
+    private final UsuarioRepository usuarioRepository;
+    private final ProjetoRepository projetoRepository;
 
-    @Autowired
-    private ProjetoRepository projetoRepository;
+    public UsuarioController(UsuarioRepository usuarioRepository, ProjetoRepository projetoRepository) {
+        this.usuarioRepository = usuarioRepository;
+        this.projetoRepository = projetoRepository;
+    }
 
-    @GetMapping("/by-email")
-    public ResponseEntity<?> getByEmail(@RequestParam String email) {
-        Optional<Usuario> usuarioOpt = usuarioRepository.findByEmail(email);
-        if (usuarioOpt.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
-        return ResponseEntity.ok(usuarioOpt.get());
+    @GetMapping("/me")
+    public ResponseEntity<UsuarioResponse> getAutenticado(Authentication authentication) {
+        return usuarioRepository.findByEmail(authentication.getName())
+            .map(usuario -> ResponseEntity.ok(UsuarioResponse.from(usuario)))
+            .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @GetMapping("/{id}/projetos/count")
-    public ResponseEntity<?> countProjetos(@PathVariable UUID id) {
-        long count = projetoRepository.countByProprietario_Id(id);
-        Map<String, Long> resp = new HashMap<>();
-        resp.put("count", count);
-        return ResponseEntity.ok(resp);
+    public ResponseEntity<Map<String, Long>> countProjetos(@PathVariable UUID id, Authentication authentication) {
+        Optional<Usuario> autenticado = usuarioRepository.findByEmail(authentication.getName());
+        if (autenticado.isEmpty() || !autenticado.get().getId().equals(id)) {
+            return ResponseEntity.status(403).build();
+        }
+
+        return ResponseEntity.ok(Map.of("count", projetoRepository.countByProprietario_Id(id)));
     }
 }
